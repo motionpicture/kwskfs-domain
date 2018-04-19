@@ -1,0 +1,22 @@
+{
+    "check-coverage": true,
+    "lines": 100,
+    "statements": 100,
+    "functions": 100,
+    "branches": 100,
+    "extension": [
+        ".ts"
+    ],
+    "include": [
+        "src/**/*.ts"
+    ],
+    "exclude": [
+        "**/*.spec.ts",
+        "src/service/util.ts",
+        "src/service/report/telemetry.ts"
+    ],
+    "reporter": [
+        "lcov",
+        "text-summary"
+    ]
+}

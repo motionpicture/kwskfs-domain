@@ -1,0 +1,26 @@
+const AWS = require('aws-sdk');
+
+const accessToken = 'eyJraWQiOiI0eVpocWlFZlFRVEVmSTNERlA1ZjBWQXpwazFLekFBa3RQd2haSGZHdzBzPSIsImFsZyI6IlJTMjU2In0.eyJzdWIiOiI3Y2ZkZTc1NC0xN2ZiLTRhM2ItYWQzMS1jZDBiNGFiNWFmZWYiLCJ0b2tlbl91c2UiOiJhY2Nlc3MiLCJzY29wZSI6ImF3cy5jb2duaXRvLnNpZ25pbi51c2VyLmFkbWluIG9wZW5pZCBwcm9maWxlIGh0dHBzOlwvXC9zc2t0cy1hcGktZGV2ZWxvcG1lbnQuYXp1cmV3ZWJzaXRlcy5uZXRcL3BsYWNlcy5yZWFkLW9ubHkgaHR0cHM6XC9cL3Nza3RzLWFwaS1kZXZlbG9wbWVudC5henVyZXdlYnNpdGVzLm5ldFwvcGVvcGxlLmNyZWRpdENhcmRzLnJlYWQtb25seSBodHRwczpcL1wvcGVjb3Jpbm8tYXBpLWRldmVsb3BtZW50LmF6dXJld2Vic2l0ZXMubmV0XC9hY2NvdW50cy5yZWFkLW9ubHkgaHR0cHM6XC9cL3BlY29yaW5vLWFwaS1kZXZlbG9wbWVudC5henVyZXdlYnNpdGVzLm5ldFwvYWNjb3VudHMuYWN0aW9ucy5yZWFkLW9ubHkgaHR0cHM6XC9cL3Nza3RzLWFwaS1kZXZlbG9wbWVudC5henVyZXdlYnNpdGVzLm5ldFwvcGVvcGxlLmNvbnRhY3RzIGh0dHBzOlwvXC9zc2t0cy1hcGktZGV2ZWxvcG1lbnQuYXp1cmV3ZWJzaXRlcy5uZXRcL3Blb3BsZS5jb250YWN0cy5yZWFkLW9ubHkgaHR0cHM6XC9cL3Nza3RzLWFwaS1kZXZlbG9wbWVudC5henVyZXdlYnNpdGVzLm5ldFwvcGVvcGxlLm93bmVyc2hpcEluZm9zIGh0dHBzOlwvXC9zc2t0cy1hcGktZGV2ZWxvcG1lbnQuYXp1cmV3ZWJzaXRlcy5uZXRcL3Blb3BsZS5vd25lcnNoaXBJbmZvcy5yZWFkLW9ubHkgaHR0cHM6XC9cL3BlY29yaW5vLWFwaS1kZXZlbG9wbWVudC5henVyZXdlYnNpdGVzLm5ldFwvdHJhbnNhY3Rpb25zIHBob25lIGh0dHBzOlwvXC9zc2t0cy1hcGktZGV2ZWxvcG1lbnQuYXp1cmV3ZWJzaXRlcy5uZXRcL2V2ZW50cy5yZWFkLW9ubHkgaHR0cHM6XC9cL3Nza3RzLWFwaS1kZXZlbG9wbWVudC5henVyZXdlYnNpdGVzLm5ldFwvcGVvcGxlLmFjY291bnRzLmFjdGlvbnMucmVhZC1vbmx5IGh0dHBzOlwvXC9zc2t0cy1hcGktZGV2ZWxvcG1lbnQuYXp1cmV3ZWJzaXRlcy5uZXRcL29yZ2FuaXphdGlvbnMucmVhZC1vbmx5IGh0dHBzOlwvXC9zc2t0cy1hcGktZGV2ZWxvcG1lbnQuYXp1cmV3ZWJzaXRlcy5uZXRcL29yZGVycy5yZWFkLW9ubHkgaHR0cHM6XC9cL3Nza3RzLWFwaS1kZXZlbG9wbWVudC5henVyZXdlYnNpdGVzLm5ldFwvcGVvcGxlLmNyZWRpdENhcmRzIGh0dHBzOlwvXC9zc2t0cy1hcGktZGV2ZWxvcG1lbnQuYXp1cmV3ZWJzaXRlcy5uZXRcL3RyYW5zYWN0aW9ucyBodHRwczpcL1wvc3NrdHMtYXBpLWRldmVsb3BtZW50LmF6dXJld2Vic2l0ZXMubmV0XC9wZW9wbGUuYWNjb3VudHMucmVhZC1vbmx5IGVtYWlsIiwiYXV0aF90aW1lIjoxNTE5MzUwMTExLCJpc3MiOiJodHRwczpcL1wvY29nbml0by1pZHAuYXAtbm9ydGhlYXN0LTEuYW1hem9uYXdzLmNvbVwvYXAtbm9ydGhlYXN0LTFfbG5xVWV2aVhqIiwiZXhwIjoxNTE5MzUzNzExLCJpYXQiOjE1MTkzNTAxMTEsInZlcnNpb24iOjIsImp0aSI6IjFmNGU3NDhkLWIzMDMtNGZlMS1hYTNkLTQ1MjdiYzVkMGEzMSIsImNsaWVudF9pZCI6Iml0MjA3b2VhdGJkN2ZqZGN2c2Yzcm1za3UiLCJ1c2VybmFtZSI6InlhbWFuZSJ9.OiDmlI5XCPhb85098Xuh2q6b2GIS9t0mpwNrm1twjmfUTfoPLmdFP4sOap409U7zu8hbGDpZ6U0GxKaA020xc0Mz8Qg6W2MGzei_1XpT5_1HOz49aBdRG2wOZ_FkFB0sNtoGKmgg_r6_YL2etrj42yVA7a-rRKEWla3SRm3iPxzIZWy-cIp8Bd1e53EF3ay0KPuuLDNHsVLjgfKjl0wBjr3_r5SBKTX90eXajtnuGMVoFC1DpKxMAZ56ePSrLRpPzOE_V6UN33MyhhweRYvYv3_v3a-6zfBa58b-v-ujJSM6zGerBzYDe-yDnwyxM6K6HwDbsvK-QFbs-9-qV6kC7g';
+
+const cognitoIdentityServiceProvider = new AWS.CognitoIdentityServiceProvider({
+    apiVersion: 'latest',
+    region: 'ap-northeast-1'
+});
+
+cognitoIdentityServiceProvider.updateUserAttributes(
+    {
+        AccessToken: accessToken,
+        UserAttributes: [
+            {
+                Name: 'custom:pecorinoAccountId',
+                Value: 'kwskfs-ilovegadd'
+            }
+        ]
+    },
+    (err, data) => {
+        if (err instanceof Error) {
+            console.error(err);
+        } else {
+            console.log(data);
+        }
+    });
