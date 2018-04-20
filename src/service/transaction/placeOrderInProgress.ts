@@ -52,7 +52,7 @@ export interface IStartParams {
     /**
      * WAITER許可証トークン
      */
-    passportToken: waiter.factory.passport.IEncodedPassport;
+    passportToken?: waiter.factory.passport.IEncodedPassport;
 }
 
 /**
@@ -465,6 +465,19 @@ export function createOrderFromTransaction(params: {
     orderStatus: factory.orderStatus;
     isGift: boolean;
 }): factory.order.IOrder {
+    // 実験的にメニューアイテムの注文の場合
+    // tslint:disable-next-line:no-single-line-block-comment
+    /* istanbul ignore next */
+    const menuItemAuthorizeActions = params.transaction.object.authorizeActions
+        .filter((a) => a.actionStatus === factory.actionStatusType.CompletedActionStatus)
+        .filter((a) => a.object.typeOf === 'Offer')
+        .filter((a) => a.object.itemOffered.typeOf === 'MenuItem');
+    // tslint:disable-next-line:no-single-line-block-comment
+    /* istanbul ignore next */
+    if (menuItemAuthorizeActions.length === 1) {
+        return createMenuItemOrderFromTransaction(params);
+    }
+
     // seatReservation exists?
     const seatReservationAuthorizeActions = params.transaction.object.authorizeActions
         .filter((a) => a.actionStatus === factory.actionStatusType.CompletedActionStatus)
@@ -597,6 +610,144 @@ export function createOrderFromTransaction(params: {
         acceptedOffers: acceptedOffers,
         // tslint:disable-next-line:max-line-length
         url: `${process.env.ORDER_INQUIRY_ENDPOINT}/inquiry/login?theater=${orderInquiryKey.theaterCode}&reserve=${orderInquiryKey.confirmationNumber}`,
+        orderStatus: params.orderStatus,
+        orderDate: params.orderDate,
+        isGift: params.isGift,
+        orderInquiryKey: orderInquiryKey
+    };
+}
+
+/**
+ * メニューアイテムの注文を作成する
+ */
+// tslint:disable-next-line:no-single-line-block-comment
+/* istanbul ignore next */
+// tslint:disable-next-line:max-func-body-length
+export function createMenuItemOrderFromTransaction(params: {
+    transaction: factory.transaction.placeOrder.ITransaction;
+    orderDate: Date;
+    orderStatus: factory.orderStatus;
+    isGift: boolean;
+}): factory.order.IOrder {
+    // 実験的にメニューアイテムの注文の場合
+    // tslint:disable-next-line:no-single-line-block-comment
+    /* istanbul ignore next */
+    const menuItemAuthorizeActions = params.transaction.object.authorizeActions
+        .filter((a) => a.actionStatus === factory.actionStatusType.CompletedActionStatus)
+        .filter((a) => a.object.typeOf === 'Offer')
+        .filter((a) => a.object.itemOffered.typeOf === 'MenuItem');
+
+    const menuItemAuthorizeAction = menuItemAuthorizeActions[0];
+    if (menuItemAuthorizeAction.result === undefined) {
+        throw new factory.errors.Argument('transaction', 'Menu item authorize action result does not exist.');
+    }
+    if (params.transaction.object.customerContact === undefined) {
+        throw new factory.errors.Argument('transaction', 'Customer contact does not exist');
+    }
+
+    const cutomerContact = params.transaction.object.customerContact;
+    const orderInquiryKey = {
+        theaterCode: menuItemAuthorizeAction.object.offeredBy.identifier,
+        confirmationNumber: parseInt(`${moment().format('YYYYMMDDHHmmss')}12345`, 10),
+        telephone: cutomerContact.telephone
+    };
+
+    // 結果作成
+    const discounts: factory.order.IDiscount[] = [];
+
+    const paymentMethods: factory.order.IPaymentMethod[] = [];
+
+    // クレジットカード決済があれば決済方法に追加
+    params.transaction.object.authorizeActions
+        .filter((a) => a.actionStatus === factory.actionStatusType.CompletedActionStatus)
+        .filter((a) => a.object.typeOf === factory.action.authorize.creditCard.ObjectType.CreditCard)
+        .forEach((creditCardAuthorizeAction: factory.action.authorize.creditCard.IAction) => {
+            paymentMethods.push({
+                name: 'クレジットカード',
+                paymentMethod: factory.paymentMethodType.CreditCard,
+                paymentMethodId: (<factory.action.authorize.creditCard.IResult>creditCardAuthorizeAction.result).execTranResult.orderId
+            });
+        });
+
+    // pecorino決済があれば決済方法に追加
+    params.transaction.object.authorizeActions
+        .filter((a) => a.actionStatus === factory.actionStatusType.CompletedActionStatus)
+        .filter((a) => a.object.typeOf === 'Pecorino')
+        .forEach((pecorinoAuthorizeAction: any) => {
+            paymentMethods.push({
+                name: 'Pecorino',
+                paymentMethod: 'Pecorino',
+                paymentMethodId: pecorinoAuthorizeAction.result.pecorinoTransaction.id
+            });
+        });
+
+    const seller: factory.order.ISeller = params.transaction.seller;
+    const customer: factory.order.ICustomer = {
+        ...{
+            id: params.transaction.agent.id,
+            typeOf: params.transaction.agent.typeOf,
+            name: `${cutomerContact.familyName} ${cutomerContact.givenName}`,
+            url: ''
+        },
+        ...params.transaction.object.customerContact
+    };
+    if (params.transaction.agent.memberOf !== undefined) {
+        customer.memberOf = params.transaction.agent.memberOf;
+    }
+
+    const reservation: any = {
+        typeOf: 'EventReservation',
+        provider: menuItemAuthorizeActions[0].object.offeredBy,
+        reservationFor: {
+            typeOf: 'DeliveryEvent'
+        },
+        reservedTicket: {
+            typeOf: 'Ticket',
+            ticketToken: '',
+            ticketedItem: menuItemAuthorizeActions.map((a) => {
+                return {
+                    typeOf: 'OrderItem',
+                    orderQuantity: a.object.acceptedQuantity,
+                    orderedItem: a.object.itemOffered
+                };
+            })
+        },
+        price: menuItemAuthorizeAction.result.price,
+        priceCurrency: factory.priceCurrency.JPY
+    };
+    const acceptedOffers = [
+        {
+            // typeOf: 'Offer',
+            price: reservation.price,
+            priceCurrency: factory.priceCurrency.JPY,
+            itemOffered: reservation,
+            seller: {
+                typeOf: params.transaction.seller.typeOf,
+                name: params.transaction.seller.name
+            }
+        }
+    ];
+
+    // 注文番号生成
+    const orderNumber = util.format(
+        '%s-%s-%s',
+        moment(params.orderDate).tz('Asia/Tokyo').format('YYMMDD'),
+        orderInquiryKey.theaterCode,
+        orderInquiryKey.confirmationNumber
+    );
+
+    return {
+        typeOf: 'Order',
+        seller: seller,
+        customer: customer,
+        price: menuItemAuthorizeAction.result.price - discounts.reduce((a, b) => a + b.discount, 0),
+        priceCurrency: factory.priceCurrency.JPY,
+        paymentMethods: paymentMethods,
+        discounts: discounts,
+        confirmationNumber: orderInquiryKey.confirmationNumber,
+        orderNumber: orderNumber,
+        acceptedOffers: acceptedOffers,
+        url: '',
         orderStatus: params.orderStatus,
         orderDate: params.orderDate,
         isGift: params.isGift,

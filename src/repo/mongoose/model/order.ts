@@ -132,6 +132,15 @@ schema.index(
     }
 );
 
+// レストラン注文検索に使用
+schema.index(
+    {
+        'acceptedOffers.itemOffered.provider.typeOf': 1,
+        'acceptedOffers.itemOffered.provider.identifier': 1
+    },
+    { name: 'searchRestaurantOrders' }
+);
+
 export default mongoose.model('Order', schema).on(
     'index',
     // tslint:disable-next-line:no-single-line-block-comment
