@@ -474,7 +474,7 @@ export function createOrderFromTransaction(params: {
         .filter((a) => a.object.itemOffered.typeOf === 'MenuItem');
     // tslint:disable-next-line:no-single-line-block-comment
     /* istanbul ignore next */
-    if (menuItemAuthorizeActions.length === 1) {
+    if (menuItemAuthorizeActions.length > 0) {
         return createMenuItemOrderFromTransaction(params);
     }
 
@@ -636,11 +636,11 @@ export function createMenuItemOrderFromTransaction(params: {
         .filter((a) => a.actionStatus === factory.actionStatusType.CompletedActionStatus)
         .filter((a) => a.object.typeOf === 'Offer')
         .filter((a) => a.object.itemOffered.typeOf === 'MenuItem');
-
-    const menuItemAuthorizeAction = menuItemAuthorizeActions[0];
-    if (menuItemAuthorizeAction.result === undefined) {
+    if (menuItemAuthorizeActions.length === 0) {
         throw new factory.errors.Argument('transaction', 'Menu item authorize action result does not exist.');
     }
+    const menuItemAuthorizeAction = menuItemAuthorizeActions[0];
+
     if (params.transaction.object.customerContact === undefined) {
         throw new factory.errors.Argument('transaction', 'Customer contact does not exist');
     }
@@ -695,6 +695,9 @@ export function createMenuItemOrderFromTransaction(params: {
         customer.memberOf = params.transaction.agent.memberOf;
     }
 
+    const price = menuItemAuthorizeActions.reduce((a, b) => a + <number>b.result.price, 0);
+    const priceCurrency = factory.priceCurrency.JPY;
+
     const reservation: any = {
         typeOf: 'EventReservation',
         provider: menuItemAuthorizeActions[0].object.offeredBy,
@@ -712,14 +715,14 @@ export function createMenuItemOrderFromTransaction(params: {
                 };
             })
         },
-        price: menuItemAuthorizeAction.result.price,
-        priceCurrency: factory.priceCurrency.JPY
+        price: price,
+        priceCurrency: priceCurrency
     };
     const acceptedOffers = [
         {
-            // typeOf: 'Offer',
-            price: reservation.price,
-            priceCurrency: factory.priceCurrency.JPY,
+            typeOf: 'Offer',
+            price: price,
+            priceCurrency: priceCurrency,
             itemOffered: reservation,
             seller: {
                 typeOf: params.transaction.seller.typeOf,
@@ -740,8 +743,8 @@ export function createMenuItemOrderFromTransaction(params: {
         typeOf: 'Order',
         seller: seller,
         customer: customer,
-        price: menuItemAuthorizeAction.result.price - discounts.reduce((a, b) => a + b.discount, 0),
-        priceCurrency: factory.priceCurrency.JPY,
+        price: price - discounts.reduce((a, b) => a + b.discount, 0),
+        priceCurrency: priceCurrency,
         paymentMethods: paymentMethods,
         discounts: discounts,
         confirmationNumber: orderInquiryKey.confirmationNumber,
