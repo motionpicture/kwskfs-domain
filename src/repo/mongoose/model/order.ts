@@ -132,13 +132,41 @@ schema.index(
     }
 );
 
-// レストラン注文検索に使用
+// 注文検索に使用
 schema.index(
     {
-        'acceptedOffers.itemOffered.provider.typeOf': 1,
-        'acceptedOffers.itemOffered.provider.identifier': 1
+        'seller.id': 1
     },
-    { name: 'searchRestaurantOrders' }
+    {
+        name: 'searchOrdersBySeller',
+        partialFilterExpression: {
+            'seller.id': { $exists: true }
+        }
+    }
+);
+
+// 注文検索に使用
+schema.index(
+    {
+        'customer.id': 1
+    },
+    {
+        name: 'searchOrdersByCustomer',
+        partialFilterExpression: {
+            'customer.id': { $exists: true }
+        }
+    }
+);
+
+// 注文検索に使用
+schema.index(
+    {
+        orderNumber: 1,
+        orderStatus: 1
+    },
+    {
+        name: 'searchOrders'
+    }
 );
 
 export default mongoose.model('Order', schema).on(

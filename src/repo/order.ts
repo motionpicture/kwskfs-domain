@@ -73,4 +73,49 @@ export class MongoRepository {
 
         return <factory.order.IOrder>doc.toObject();
     }
+
+    /**
+     * 注文を検索する
+     */
+    public async search(
+        searchConditions: factory.order.ISearchConditions
+    ): Promise<factory.order.IOrder[]> {
+        const andConditions: any[] = [
+        ];
+
+        if (searchConditions.sellerId !== undefined) {
+            andConditions.push({
+                'seller.id': {
+                    $exists: true,
+                    $eq: searchConditions.sellerId
+                }
+            });
+        }
+
+        if (searchConditions.customerId !== undefined) {
+            andConditions.push({
+                'customer.id': {
+                    $exists: true,
+                    $eq: searchConditions.customerId
+                }
+            });
+        }
+
+        if (searchConditions.orderNumber !== undefined) {
+            andConditions.push({
+                orderNumber: searchConditions.orderNumber
+            });
+        }
+
+        if (searchConditions.orderStatus !== undefined) {
+            andConditions.push({
+                orderStatus: searchConditions.orderStatus
+            });
+        }
+
+        return this.orderModel.find({ $and: andConditions })
+            .sort({ orderDate: 1 })
+            .exec()
+            .then((docs) => docs.map((doc) => doc.toObject()));
+    }
 }

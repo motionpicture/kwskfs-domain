@@ -2,8 +2,7 @@ import * as factory from '@motionpicture/kwskfs-factory';
 import { Connection } from 'mongoose';
 import ownershipInfoModel from './mongoose/model/ownershipInfo';
 
-export type IEventReservation = factory.reservation.event.IEventReservation<factory.event.IEvent>;
-export type IEventReservationOwnershipInfo = factory.ownershipInfo.IOwnershipInfo<IEventReservation>;
+export type IOwnershipInfo<T extends factory.ownershipInfo.IGoodType> = factory.ownershipInfo.IOwnershipInfo<T>;
 
 /**
  * 所有権リポジトリー
@@ -16,7 +15,6 @@ export class MongoRepository {
     }
 
     /**
-     * save an ownershipInfo
      * 所有権情報を保管する
      * @param ownershipInfo ownershipInfo object
      */
@@ -31,22 +29,33 @@ export class MongoRepository {
     }
 
     /**
-     * 上映イベント予約の所有権を検索する
+     * 所有権を検索する
      */
-    public async searchEventReservation(searchConditions: {
-        eventType: factory.eventType;
-        ownedBy?: string;
-        ownedAt?: Date;
-    }): Promise<IEventReservationOwnershipInfo[]> {
+    public async search<T extends factory.ownershipInfo.IGoodType>(
+        searchConditions: factory.ownershipInfo.ISearchConditions<T>
+    ): Promise<IOwnershipInfo<T>[]> {
         const andConditions: any[] = [
-            { 'typeOfGood.typeOf': factory.reservationType.EventReservation }, // 所有対象がイベント予約
-            {
-                'typeOfGood.reservationFor.typeOf': {
-                    $exists: true,
-                    $eq: searchConditions.eventType
-                }
-            } // 予約対象が個々の上映イベント
+            { 'typeOfGood.typeOf': searchConditions.goodType }
         ];
+
+        // if (searchConditions.typeOfGood !== undefined) {
+        //     if (searchConditions.typeOfGood.eventReservationFor !== undefined) {
+        //         andConditions.push(
+        //             {
+        //                 'typeOfGood.reservationFor.typeOf': {
+        //                     $exists: true,
+        //                     $eq: searchConditions.typeOfGood.eventReservationFor.typeOf
+        //                 }
+        //             },
+        //             {
+        //                 'typeOfGood.reservationFor.identifier': {
+        //                     $exists: true,
+        //                     $eq: searchConditions.typeOfGood.eventReservationFor.identifier
+        //                 }
+        //             }
+        //         );
+        //     }
+        // }
 
         // 誰の所有か
         // tslint:disable-next-line:no-single-line-block-comment

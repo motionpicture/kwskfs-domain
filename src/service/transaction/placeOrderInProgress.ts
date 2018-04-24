@@ -1,6 +1,5 @@
 /**
  * 進行中注文取引サービス
- * @namespace service.transaction.placeOrderInProgress
  */
 
 import * as factory from '@motionpicture/kwskfs-factory';
@@ -278,7 +277,7 @@ export function confirm(
         });
 
         // tslint:disable-next-line:max-line-length
-        type IOwnershipInfo = factory.ownershipInfo.IOwnershipInfo<factory.reservation.event.IEventReservation<factory.event.IEvent>>;
+        type IOwnershipInfo = factory.ownershipInfo.IOwnershipInfo<factory.reservationType>;
         const ownershipInfos: IOwnershipInfo[] = order.acceptedOffers.map((acceptedOffer) => {
             // ownershipInfoのidentifierはコレクション内でuniqueである必要があるので、この仕様には要注意
             // saveする際に、identifierでfindOneAndUpdateしている
