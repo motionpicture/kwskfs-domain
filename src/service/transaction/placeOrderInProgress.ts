@@ -10,6 +10,9 @@ import { PhoneNumberFormat, PhoneNumberUtil } from 'google-libphonenumber';
 import * as moment from 'moment-timezone';
 import * as pug from 'pug';
 import * as util from 'util';
+import * as uuid from 'uuid';
+// tslint:disable-next-line:no-require-imports no-var-requires
+const orderId = require('order-id')('mysecret');
 
 import { MongoRepository as ActionRepo } from '../../repo/action';
 import { MongoRepository as OrganizationRepo } from '../../repo/organization';
@@ -279,7 +282,7 @@ export function confirm(
         const ownershipInfos: IOwnershipInfo[] = order.acceptedOffers.map((acceptedOffer) => {
             // ownershipInfoのidentifierはコレクション内でuniqueである必要があるので、この仕様には要注意
             // saveする際に、identifierでfindOneAndUpdateしている
-            const identifier = `${acceptedOffer.itemOffered.typeOf}-${acceptedOffer.itemOffered.reservedTicket.ticketToken}`;
+            const identifier = acceptedOffer.itemOffered.reservedTicket.ticketToken;
             const event = acceptedOffer.itemOffered.reservationFor;
 
             return {
@@ -465,8 +468,9 @@ export function createOrderFromTransaction(params: {
         throw new factory.errors.Argument('transaction', 'Customer contact does not exist');
     }
 
+    const confirmationNumber = 123;
     const orderInquiryKey = {
-        confirmationNumber: parseInt(`${moment().format('YYYYMMDDHHmmss')}12345`, 10),
+        confirmationNumber: confirmationNumber,
         telephone: cutomerContact.telephone
     };
 
@@ -514,9 +518,26 @@ export function createOrderFromTransaction(params: {
 
     // 座席仮予約から容認供給情報を生成する
     // 座席予約以外の注文アイテムが追加された場合は、このロジックに修正が加えられることになる
+    const underName = {
+        typeOf: customer.typeOf,
+        name: {
+            ja: `${customer.familyName} ${customer.givenName}`,
+            en: `${customer.givenName} ${customer.familyName}`
+        }
+    };
     const acceptedOffers = seatReservationAuthorizeActions.map((a) => {
+        // 最終的なチケット情報を更新
+        const offer = a.object;
+        const ticketToken = uuid.v4();
+        offer.itemOffered.underName = underName;
+        offer.itemOffered.modifiedTime = params.orderDate;
+        offer.itemOffered.reservedTicket.ticketNumber = '';
+        offer.itemOffered.reservedTicket.ticketToken = ticketToken;
+        offer.itemOffered.reservedTicket.dateIssued = params.orderDate;
+        offer.itemOffered.reservedTicket.underName = underName;
+
         return {
-            ...a.object,
+            ...offer,
             seller: {
                 typeOf: params.transaction.seller.typeOf,
                 name: params.transaction.seller.name
@@ -525,11 +546,7 @@ export function createOrderFromTransaction(params: {
     });
 
     // 注文番号生成
-    const orderNumber = util.format(
-        '%s-%s',
-        moment(params.orderDate).tz('Asia/Tokyo').format('YYMMDD'),
-        orderInquiryKey.confirmationNumber
-    );
+    const orderNumber = orderId.generate();
 
     type ActionResult = factory.action.authorize.offer.eventReservation.seat.IResult;
     const price = seatReservationAuthorizeActions.reduce((a, b) => a + (<ActionResult>b.result).price, 0);
@@ -542,7 +559,7 @@ export function createOrderFromTransaction(params: {
         priceCurrency: factory.priceCurrency.JPY,
         paymentMethods: paymentMethods,
         discounts: discounts,
-        confirmationNumber: orderInquiryKey.confirmationNumber,
+        confirmationNumber: confirmationNumber,
         orderNumber: orderNumber,
         acceptedOffers: acceptedOffers,
         // tslint:disable-next-line:max-line-length
@@ -583,8 +600,9 @@ export function createMenuItemOrderFromTransaction(params: {
     }
 
     const cutomerContact = params.transaction.object.customerContact;
+    const confirmationNumber = 123;
     const orderInquiryKey = {
-        confirmationNumber: parseInt(`${moment().format('YYYYMMDDHHmmss')}12345`, 10),
+        confirmationNumber: confirmationNumber,
         telephone: cutomerContact.telephone
     };
 
@@ -635,42 +653,26 @@ export function createMenuItemOrderFromTransaction(params: {
     const price = menuItemAuthorizeActions.reduce((a, b) => a + (<ActionResult>b.result).price, 0);
     const priceCurrency = factory.priceCurrency.JPY;
 
-    // const reservation: any = {
-    //     typeOf: 'EventReservation',
-    //     provider: menuItemAuthorizeActions[0].object.offeredBy,
-    //     reservationFor: {
-    //         typeOf: 'DeliveryEvent'
-    //     },
-    //     reservedTicket: {
-    //         typeOf: 'Ticket',
-    //         ticketToken: '',
-    //         ticketedItem: menuItemAuthorizeActions.map((a) => {
-    //             return {
-    //                 typeOf: 'OrderItem',
-    //                 orderQuantity: a.object.acceptedQuantity,
-    //                 orderedItem: a.object.itemOffered
-    //             };
-    //         })
-    //     },
-    //     price: price,
-    //     priceCurrency: priceCurrency
-    // };
-    // const acceptedOffers = [
-    //     {
-    //         typeOf: 'Offer',
-    //         price: price,
-    //         priceCurrency: priceCurrency,
-    //         itemOffered: reservation,
-    //         seller: {
-    //             typeOf: params.transaction.seller.typeOf,
-    //             name: params.transaction.seller.name
-    //         }
-    //     }
-    // ];
-
+    const underName = {
+        typeOf: customer.typeOf,
+        name: {
+            ja: `${customer.familyName} ${customer.givenName}`,
+            en: `${customer.givenName} ${customer.familyName}`
+        }
+    };
     const acceptedOffers = menuItemAuthorizeActions.map((a) => {
+        // 最終的なチケット情報を更新
+        const offer = a.object;
+        const ticketToken = uuid.v4();
+        offer.itemOffered.underName = underName;
+        offer.itemOffered.modifiedTime = params.orderDate;
+        offer.itemOffered.reservedTicket.ticketNumber = '';
+        offer.itemOffered.reservedTicket.ticketToken = ticketToken;
+        offer.itemOffered.reservedTicket.dateIssued = params.orderDate;
+        offer.itemOffered.reservedTicket.underName = underName;
+
         return {
-            ...a.object,
+            ...offer,
             seller: {
                 typeOf: params.transaction.seller.typeOf,
                 name: params.transaction.seller.name
@@ -679,11 +681,7 @@ export function createMenuItemOrderFromTransaction(params: {
     });
 
     // 注文番号生成
-    const orderNumber = util.format(
-        '%s-%s',
-        moment(params.orderDate).tz('Asia/Tokyo').format('YYMMDD'),
-        orderInquiryKey.confirmationNumber
-    );
+    const orderNumber = orderId.generate();
 
     return {
         typeOf: 'Order',
@@ -693,7 +691,7 @@ export function createMenuItemOrderFromTransaction(params: {
         priceCurrency: priceCurrency,
         paymentMethods: paymentMethods,
         discounts: discounts,
-        confirmationNumber: orderInquiryKey.confirmationNumber,
+        confirmationNumber: confirmationNumber,
         orderNumber: orderNumber,
         acceptedOffers: acceptedOffers,
         url: '',
