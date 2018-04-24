@@ -5,7 +5,6 @@
  * @module
  */
 
-import * as COA from '@motionpicture/coa-service';
 import * as GMO from '@motionpicture/gmo-service';
 import * as factory from '@motionpicture/kwskfs-factory';
 import * as pecorinoapi from '@motionpicture/pecorino-api-nodejs-client';
@@ -13,8 +12,6 @@ import * as mongoose from 'mongoose';
 import * as redis from 'redis';
 
 import * as DeliveryService from './service/delivery';
-import * as ItemAvailabilityService from './service/itemAvailability';
-import * as MasterSyncService from './service/masterSync';
 import * as NotificationService from './service/notification';
 import * as OfferService from './service/offer';
 import * as OrderService from './service/order';
@@ -35,7 +32,6 @@ import { MongoRepository as ClientRepo } from './repo/client';
 import { MongoRepository as CreativeWorkRepo } from './repo/creativeWork';
 import { MongoRepository as EventRepo } from './repo/event';
 import { MongoRepository as GMONotificationRepo } from './repo/gmoNotification';
-import { MongoRepository as IndividualScreeningEventItemAvailabilityRepo } from './repo/itemAvailability/individualScreeningEvent';
 import { MongoRepository as OrderRepo } from './repo/order';
 import { MongoRepository as OrganizationRepo } from './repo/organization';
 import { MongoRepository as OwnershipInfoRepo } from './repo/ownershipInfo';
@@ -67,16 +63,6 @@ export import mongoose = mongoose;
  * });
  */
 export import redis = redis;
-
-/**
- * COAのAPIクライアント
- *
- * @example
- * kwskfs.COA.services.master.theater({ theater_code: '118' }).then(() => {
- *     console.log(result);
- * });
- */
-export import COA = COA;
 
 /**
  * GMOのAPIクライアント
@@ -113,15 +99,13 @@ export namespace repository {
     export class Transaction extends TransactionRepo { }
 
     export namespace itemAvailability {
-        export class IndividualScreeningEvent extends IndividualScreeningEventItemAvailabilityRepo { }
+        // export class IndividualScreeningEvent extends IndividualScreeningEventItemAvailabilityRepo { }
     }
 }
 
 export namespace service {
     export import delivery = DeliveryService;
     export import offer = OfferService;
-    export import itemAvailability = ItemAvailabilityService;
-    export import masterSync = MasterSyncService;
     export import notification = NotificationService;
     export import order = OrderService;
     export namespace person {

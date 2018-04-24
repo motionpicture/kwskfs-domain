@@ -1,6 +1,5 @@
 /**
  * 決済サービス
- * @namespace service.payment
  */
 
 import * as GMO from '@motionpicture/gmo-service';
@@ -358,79 +357,5 @@ function onRefund(refundActionAttributes: factory.action.trade.refund.IAttribute
         await Promise.all(taskAttributes.map(async (taskAttribute) => {
             return repos.task.save(taskAttribute);
         }));
-    };
-}
-
-/**
- * ムビチケ着券取消し
- * @export
- * @param transactionId 取引ID
- */
-export function cancelMvtk(transactionId: string) {
-    return async () => {
-        debug('canceling mvtk...transactionId:', transactionId);
-        // ムビチケは実は仮押さえの仕組みがないので何もしない
-    };
-}
-
-/**
- * ムビチケ資産移動
- * @export
- * @param transactionId 取引ID
- */
-export function useMvtk(transactionId: string) {
-    return async (repos: {
-        action: ActionRepo;
-        transaction: TransactionRepo;
-    }) => {
-        const transaction = await repos.transaction.findPlaceOrderById(transactionId);
-        const transactionResult = transaction.result;
-        if (transactionResult === undefined) {
-            throw new factory.errors.NotFound('transaction.result');
-        }
-        const potentialActions = transaction.potentialActions;
-        if (potentialActions === undefined) {
-            throw new factory.errors.NotFound('transaction.potentialActions');
-        }
-        const orderPotentialActions = potentialActions.order.potentialActions;
-        if (orderPotentialActions === undefined) {
-            throw new factory.errors.NotFound('order.potentialActions');
-        }
-
-        const useActionAttributes = orderPotentialActions.useMvtk;
-        if (useActionAttributes !== undefined) {
-            // ムビチケ承認アクションがあるはず
-            // const authorizeAction = <factory.action.authorize.mvtk.IAction>transaction.object.authorizeActions
-            //     .filter((a) => a.actionStatus === factory.actionStatusType.CompletedActionStatus)
-            //     .find((a) => a.object.typeOf === factory.action.authorize.authorizeActionPurpose.Mvtk);
-
-            // アクション開始
-            const action = await repos.action.start<factory.action.consume.use.mvtk.IAction>(useActionAttributes);
-
-            try {
-                // 実は取引成立の前に着券済みなので何もしない
-            } catch (error) {
-                // tslint:disable-next-line:no-single-line-block-comment
-                /* istanbul ignore next */
-
-                // actionにエラー結果を追加
-                try {
-                    // tslint:disable-next-line:max-line-length no-single-line-block-comment
-                    const actionError = (error instanceof Error) ? { ...error, ...{ message: error.message } } : /* istanbul ignore next */ error;
-                    await repos.action.giveUp(useActionAttributes.typeOf, action.id, actionError);
-                } catch (__) {
-                    // 失敗したら仕方ない
-                }
-
-                // tslint:disable-next-line:no-single-line-block-comment
-                /* istanbul ignore next */
-                throw new Error(error);
-            }
-
-            // アクション完了
-            debug('ending action...');
-            const actionResult: factory.action.consume.use.mvtk.IResult = {};
-            await repos.action.complete(useActionAttributes.typeOf, action.id, actionResult);
-        }
     };
 }

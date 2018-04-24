@@ -139,10 +139,6 @@ export interface ISellerFlowResult {
          */
         numberOfPaymentCreditCard: number;
         /**
-         * ムビチケ割引数
-         */
-        numberOfDiscountMvtk: number;
-        /**
          * 取引の合計所要時間(ミリ秒)
          */
         totalRequiredTimeInMilliseconds: number;
@@ -576,13 +572,16 @@ function createSellerFlow(
             (numberOfTransactionsConfirmed > 0) ? totalRequiredTimeInMilliseconds / numberOfTransactionsConfirmed : 0;
 
         // イベントまでの残り時間算出(イベント開始日時と成立日時の差)
-        const timesLeftUntilEvent = confirmedTransactions.map((transaction) => {
+        const timesLeftUntilEvent = confirmedTransactions.map((__) => {
+            // tslint:disable-next-line:no-suspicious-comment
+            // TODO 実装
+            return 0;
             // 座席予約は必ず存在する
-            const seatReservation = <factory.action.authorize.seatReservation.IAction>transaction.object.authorizeActions.find(
-                (action) => action.object.typeOf === factory.action.authorize.seatReservation.ObjectType.SeatReservation
-            );
+            // const seatReservation = <factory.action.authorize.seatReservation.IAction>transaction.object.authorizeActions.find(
+            //     (action) => action.object.typeOf === factory.action.authorize.seatReservation.ObjectType.SeatReservation
+            // );
 
-            return moment(seatReservation.object.individualScreeningEvent.startDate).diff(moment(transaction.endDate), 'milliseconds');
+            // return moment(seatReservation.object.individualScreeningEvent.startDate).diff(moment(transaction.endDate), 'milliseconds');
         });
         const totalTimeLeftUntilEventInMilliseconds = timesLeftUntilEvent.reduce((a, b) => a + b, 0);
         const maxTimeLeftUntilEventInMilliseconds = timesLeftUntilEvent.reduce((a, b) => Math.max(a, b), 0);
@@ -647,8 +646,6 @@ function createSellerFlow(
                 numberOfExpired: numberOfTransactionsExpired,
                 // tslint:disable-next-line:no-suspicious-comment
                 numberOfPaymentCreditCard: 0, // TODO 実装
-                // tslint:disable-next-line:no-suspicious-comment
-                numberOfDiscountMvtk: 0, // TODO 実装
                 totalRequiredTimeInMilliseconds: totalRequiredTimeInMilliseconds,
                 maxRequiredTimeInMilliseconds: maxRequiredTimeInMilliseconds,
                 minRequiredTimeInMilliseconds: minRequiredTimeInMilliseconds,

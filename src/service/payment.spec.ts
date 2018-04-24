@@ -16,7 +16,7 @@ before(() => {
     existingTransaction = {
         id: '123',
         agent: { typeOf: 'Person' },
-        seller: { typeOf: kwskfs.factory.organizationType.MovieTheater },
+        seller: { typeOf: kwskfs.factory.organizationType.SportsTeam },
         object: {
             customerContact: {},
             authorizeActions: [
@@ -45,8 +45,7 @@ before(() => {
                 typeOf: kwskfs.factory.actionType.OrderAction,
                 potentialActions: {
                     payCreditCard: { typeOf: kwskfs.factory.actionType.PayAction },
-                    payPecorino: { typeOf: kwskfs.factory.actionType.PayAction },
-                    useMvtk: { typeOf: kwskfs.factory.actionType.UseAction }
+                    payPecorino: { typeOf: kwskfs.factory.actionType.PayAction }
                 }
             }
         }
@@ -482,132 +481,6 @@ describe('payCreditCard()', () => {
         sandbox.verify();
     });
 
-});
-
-describe('cancelMvtk()', () => {
-    afterEach(() => {
-        sandbox.restore();
-    });
-
-    it('何もしないので、エラーにならないはず', async () => {
-        const result = await kwskfs.service.payment.cancelMvtk(existingTransaction.id)();
-
-        assert.equal(result, undefined);
-        sandbox.verify();
-    });
-});
-
-describe('useMvtk()', () => {
-    afterEach(() => {
-        sandbox.restore();
-    });
-
-    it('何もしないので、エラーにならないはず', async () => {
-        const action = { id: 'actionId' };
-
-        const actionRepo = new kwskfs.repository.Action(kwskfs.mongoose.connection);
-        const transactionRepo = new kwskfs.repository.Transaction(kwskfs.mongoose.connection);
-
-        sandbox.mock(actionRepo).expects('start').once()
-            .withExactArgs(existingTransaction.potentialActions.order.potentialActions.useMvtk).resolves(action);
-        sandbox.mock(actionRepo).expects('complete').once()
-            .withArgs(existingTransaction.potentialActions.order.potentialActions.useMvtk.typeOf, action.id).resolves(action);
-        sandbox.mock(actionRepo).expects('giveUp').never();
-        sandbox.mock(transactionRepo).expects('findPlaceOrderById').once()
-            .withExactArgs(existingTransaction.id).resolves(existingTransaction);
-
-        const result = await kwskfs.service.payment.useMvtk(existingTransaction.id)({
-            action: actionRepo,
-            transaction: transactionRepo
-        });
-
-        assert.equal(result, undefined);
-        sandbox.verify();
-    });
-
-    it('注文取引結果が未定義であればNotFoundエラーとなるはず', async () => {
-        const placeOrderTransaction = { ...existingTransaction, result: undefined };
-
-        const actionRepo = new kwskfs.repository.Action(kwskfs.mongoose.connection);
-        const transactionRepo = new kwskfs.repository.Transaction(kwskfs.mongoose.connection);
-
-        sandbox.mock(transactionRepo).expects('findPlaceOrderById').once()
-            .withExactArgs(placeOrderTransaction.id).resolves(placeOrderTransaction);
-        sandbox.mock(actionRepo).expects('start').never();
-
-        const result = await kwskfs.service.payment.useMvtk(existingTransaction.id)({
-            action: actionRepo,
-            transaction: transactionRepo
-        })
-            .catch((err) => err);
-
-        assert(result instanceof kwskfs.factory.errors.NotFound);
-        sandbox.verify();
-    });
-
-    it('注文取引の潜在アクションが未定義であればNotFoundエラーとなるはず', async () => {
-        const placeOrderTransaction = { ...existingTransaction, potentialActions: undefined };
-
-        const actionRepo = new kwskfs.repository.Action(kwskfs.mongoose.connection);
-        const transactionRepo = new kwskfs.repository.Transaction(kwskfs.mongoose.connection);
-
-        sandbox.mock(transactionRepo).expects('findPlaceOrderById').once()
-            .withExactArgs(placeOrderTransaction.id).resolves(placeOrderTransaction);
-        sandbox.mock(actionRepo).expects('start').never();
-
-        const result = await kwskfs.service.payment.useMvtk(existingTransaction.id)({
-            action: actionRepo,
-            transaction: transactionRepo
-        })
-            .catch((err) => err);
-
-        assert(result instanceof kwskfs.factory.errors.NotFound);
-        sandbox.verify();
-    });
-
-    it('注文アクションの潜在アクションが未定義であればNotFoundエラーとなるはず', async () => {
-        const transaction = {
-            ...existingTransaction,
-            potentialActions: {
-                order: {}
-            }
-        };
-
-        const actionRepo = new kwskfs.repository.Action(kwskfs.mongoose.connection);
-        const transactionRepo = new kwskfs.repository.Transaction(kwskfs.mongoose.connection);
-
-        sandbox.mock(transactionRepo).expects('findPlaceOrderById').once().withExactArgs(transaction.id).resolves(transaction);
-        sandbox.mock(actionRepo).expects('start').never();
-
-        const result = await kwskfs.service.payment.useMvtk(existingTransaction.id)({
-            action: actionRepo,
-            transaction: transactionRepo
-        })
-            .catch((err) => err);
-
-        assert(result instanceof kwskfs.factory.errors.NotFound);
-        sandbox.verify();
-    });
-
-    it('ムビチケ使用アクションがなければ何もしないはず', async () => {
-        const placeOrderTransaction = { ...existingTransaction };
-        placeOrderTransaction.potentialActions.order.potentialActions.useMvtk = undefined;
-
-        const actionRepo = new kwskfs.repository.Action(kwskfs.mongoose.connection);
-        const transactionRepo = new kwskfs.repository.Transaction(kwskfs.mongoose.connection);
-
-        sandbox.mock(transactionRepo).expects('findPlaceOrderById').once()
-            .withExactArgs(placeOrderTransaction.id).resolves(placeOrderTransaction);
-        sandbox.mock(actionRepo).expects('start').never();
-
-        const result = await kwskfs.service.payment.useMvtk(existingTransaction.id)({
-            action: actionRepo,
-            transaction: transactionRepo
-        });
-
-        assert.equal(result, undefined);
-        sandbox.verify();
-    });
 });
 
 describe('refundCreditCard()', () => {

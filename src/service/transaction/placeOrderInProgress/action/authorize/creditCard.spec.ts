@@ -55,7 +55,7 @@ describe('action.authorize.creditCard.create()', () => {
         sandbox.mock(transactionRepo).expects('findPlaceOrderInProgressById').once()
             .withExactArgs(transaction.id).resolves(transaction);
         sandbox.mock(actionRepo).expects('start').once().resolves(action);
-        sandbox.mock(organizationRepo).expects('findMovieTheaterById').once().withExactArgs(seller.id).resolves(seller);
+        sandbox.mock(organizationRepo).expects('findById').once().withExactArgs(seller.id).resolves(seller);
         sandbox.mock(kwskfs.GMO.services.credit).expects('entryTran').once().resolves(entryTranResult);
         sandbox.mock(kwskfs.GMO.services.credit).expects('execTran').once().resolves(execTranResult);
         sandbox.mock(actionRepo).expects('complete').once().resolves(action);
@@ -107,7 +107,7 @@ describe('action.authorize.creditCard.create()', () => {
     //     sandbox.mock(transactionRepo).expects('findPlaceOrderInProgressById').once()
     //         .withExactArgs(transaction.id).resolves(transaction);
     //     sandbox.mock(actionRepo).expects('start').never();
-    //     sandbox.mock(organizationRepo).expects('findMovieTheaterById').never();
+    //     sandbox.mock(organizationRepo).expects('findById').never();
     //     sandbox.mock(kwskfs.GMO.services.credit).expects('entryTran').never();
     //     sandbox.mock(kwskfs.GMO.services.credit).expects('execTran').never();
 
@@ -164,7 +164,7 @@ describe('action.authorize.creditCard.create()', () => {
         sandbox.mock(transactionRepo).expects('findPlaceOrderInProgressById').once()
             .withExactArgs(transaction.id).resolves(transaction);
         sandbox.mock(actionRepo).expects('start').once().resolves(action);
-        sandbox.mock(organizationRepo).expects('findMovieTheaterById').once().withExactArgs(seller.id).resolves(seller);
+        sandbox.mock(organizationRepo).expects('findById').once().withExactArgs(seller.id).resolves(seller);
         sandbox.mock(kwskfs.GMO.services.credit).expects('entryTran').once().rejects(entryTranResult);
         sandbox.mock(kwskfs.GMO.services.credit).expects('execTran').never();
         sandbox.mock(actionRepo).expects('giveUp').once()
@@ -223,7 +223,7 @@ describe('action.authorize.creditCard.create()', () => {
         sandbox.mock(transactionRepo).expects('findPlaceOrderInProgressById').once()
             .withExactArgs(transaction.id).resolves(transaction);
         sandbox.mock(actionRepo).expects('start').once().resolves(action);
-        sandbox.mock(organizationRepo).expects('findMovieTheaterById').once().withExactArgs(seller.id).resolves(seller);
+        sandbox.mock(organizationRepo).expects('findById').once().withExactArgs(seller.id).resolves(seller);
         sandbox.mock(kwskfs.GMO.services.credit).expects('entryTran').once().rejects(entryTranResult);
         sandbox.mock(kwskfs.GMO.services.credit).expects('execTran').never();
         sandbox.mock(actionRepo).expects('giveUp').once()
@@ -286,7 +286,7 @@ describe('action.authorize.creditCard.create()', () => {
         sandbox.mock(transactionRepo).expects('findPlaceOrderInProgressById').once()
             .withExactArgs(transaction.id).resolves(transaction);
         sandbox.mock(actionRepo).expects('start').once().resolves(action);
-        sandbox.mock(organizationRepo).expects('findMovieTheaterById').once().withExactArgs(seller.id).resolves(seller);
+        sandbox.mock(organizationRepo).expects('findById').once().withExactArgs(seller.id).resolves(seller);
         sandbox.mock(kwskfs.GMO.services.credit).expects('entryTran').once().rejects(entryTranResult);
         sandbox.mock(kwskfs.GMO.services.credit).expects('execTran').never();
         sandbox.mock(actionRepo).expects('giveUp').once()
@@ -349,7 +349,7 @@ describe('action.authorize.creditCard.create()', () => {
         sandbox.mock(transactionRepo).expects('findPlaceOrderInProgressById').once()
             .withExactArgs(transaction.id).resolves(transaction);
         sandbox.mock(actionRepo).expects('start').once().resolves(action);
-        sandbox.mock(organizationRepo).expects('findMovieTheaterById').once().withExactArgs(seller.id).resolves(seller);
+        sandbox.mock(organizationRepo).expects('findById').once().withExactArgs(seller.id).resolves(seller);
         sandbox.mock(kwskfs.GMO.services.credit).expects('entryTran').once().rejects(entryTranResult);
         sandbox.mock(kwskfs.GMO.services.credit).expects('execTran').never();
         sandbox.mock(actionRepo).expects('giveUp').once()
@@ -412,7 +412,7 @@ describe('action.authorize.creditCard.create()', () => {
         sandbox.mock(transactionRepo).expects('findPlaceOrderInProgressById').once()
             .withExactArgs(transaction.id).resolves(transaction);
         sandbox.mock(actionRepo).expects('start').once().resolves(action);
-        sandbox.mock(organizationRepo).expects('findMovieTheaterById').once().withExactArgs(seller.id).resolves(seller);
+        sandbox.mock(organizationRepo).expects('findById').once().withExactArgs(seller.id).resolves(seller);
         sandbox.mock(kwskfs.GMO.services.credit).expects('entryTran').once().rejects(entryTranResult);
         sandbox.mock(kwskfs.GMO.services.credit).expects('execTran').never();
         sandbox.mock(actionRepo).expects('giveUp').once()

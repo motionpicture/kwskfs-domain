@@ -130,7 +130,6 @@ schema.index(
 schema.index(
     {
         'result.order.orderInquiryKey.confirmationNumber': 1,
-        'result.order.orderInquiryKey.theaterCode': 1,
         'result.order.orderInquiryKey.telephone': 1,
         status: 1
     },
@@ -138,7 +137,6 @@ schema.index(
         name: 'orderInquiryKey',
         partialFilterExpression: {
             'result.order.orderInquiryKey.confirmationNumber': { $exists: true },
-            'result.order.orderInquiryKey.theaterCode': { $exists: true },
             'result.order.orderInquiryKey.telephone': { $exists: true }
         }
     }
@@ -147,12 +145,10 @@ schema.index(
 // LINEアシスタントでの取引照会に使用
 schema.index(
     {
-        'result.order.orderInquiryKey.theaterCode': 1,
         'result.order.orderInquiryKey.confirmationNumber': 1
     },
     {
         partialFilterExpression: {
-            'result.order.orderInquiryKey.theaterCode': { $exists: true },
             'result.order.orderInquiryKey.confirmationNumber': { $exists: true }
         }
     }

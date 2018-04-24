@@ -31,8 +31,6 @@ npm install @motionpicture/kwskfs-domain
 | `GMO_ENDPOINT`                              | true     |                                   | GMO API endpoint       |
 | `GMO_SITE_ID`                               | true     |                                   | GMO SiteID             |
 | `GMO_SITE_PASS`                             | true     |                                   | GMO SitePass           |
-| `COA_ENDPOINT`                              | true     |                                   | COA API endpoint       |
-| `COA_REFRESH_TOKEN`                         | true     |                                   | COA API refresh token  |
 | `KWSKFS_DEVELOPER_LINE_NOTIFY_ACCESS_TOKEN` | true     |                                   | 開発者通知用LINEアクセストークン     |
 | `WAITER_SECRET`                             | true     |                                   | WAITER許可証トークン秘密鍵       |
 | `WAITER_PASSPORT_ISSUER`                    | true     | https://kwskfs-waiter-example.com | WAITER許可証発行者           |

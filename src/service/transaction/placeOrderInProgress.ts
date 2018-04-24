@@ -1,5 +1,4 @@
 /**
- * placeOrder in progress transaction service
  * 進行中注文取引サービス
  * @namespace service.transaction.placeOrderInProgress
  */
@@ -17,9 +16,9 @@ import { MongoRepository as OrganizationRepo } from '../../repo/organization';
 import { MongoRepository as TransactionRepo } from '../../repo/transaction';
 
 import * as CreditCardAuthorizeActionService from './placeOrderInProgress/action/authorize/creditCard';
-import * as MvtkAuthorizeActionService from './placeOrderInProgress/action/authorize/mvtk';
+import * as MenuItemAuthorizeActionService from './placeOrderInProgress/action/authorize/offer/eventReservation/menuItem';
+import * as SeatReservationAuthorizeActionService from './placeOrderInProgress/action/authorize/offer/eventReservation/seat';
 import * as PecorinoAuthorizeActionService from './placeOrderInProgress/action/authorize/pecorino';
-import * as SeatReservationAuthorizeActionService from './placeOrderInProgress/action/authorize/seatReservation';
 
 const debug = createDebug('kwskfs-domain:service:transaction:placeOrderInProgress');
 
@@ -65,7 +64,7 @@ export function start(params: IStartParams):
         transaction: TransactionRepo;
     }) => {
         // 売り手を取得
-        const seller = await repos.organization.findMovieTheaterById(params.sellerId);
+        const seller = await repos.organization.findById(params.sellerId);
 
         let passport: waiter.factory.passport.IPassport | undefined;
 
@@ -78,11 +77,11 @@ export function start(params: IStartParams):
             }
 
             // スコープを判別
-            if (!validatePassport(passport, seller.identifier)) {
+            if (!validatePassport(passport)) {
                 throw new factory.errors.Argument('passportToken', 'Invalid passport.');
             }
-        } else {
-            throw new factory.errors.ArgumentNull('passportToken');
+            // } else {
+            //     throw new factory.errors.ArgumentNull('passportToken');
         }
 
         const agent: factory.transaction.placeOrder.IAgent = {
@@ -93,7 +92,7 @@ export function start(params: IStartParams):
         if (params.clientUser.username !== undefined) {
             agent.memberOf = {
                 membershipNumber: params.agentId,
-                programName: 'Amazon Cognito'
+                programName: 'Cognito'
             };
         }
 
@@ -102,10 +101,10 @@ export function start(params: IStartParams):
             status: factory.transactionStatusType.InProgress,
             agent: agent,
             seller: {
-                typeOf: factory.organizationType.MovieTheater,
+                typeOf: seller.typeOf,
                 id: seller.id,
                 name: seller.name.ja,
-                url: seller.url
+                url: (seller.url !== undefined) ? seller.url : ''
             },
             object: {
                 passportToken: params.passportToken,
@@ -148,49 +147,42 @@ export function start(params: IStartParams):
  * @param passport WAITER許可証
  * @param sellerIdentifier 販売者識別子
  */
-function validatePassport(passport: waiter.factory.passport.IPassport, sellerIdentifier: string) {
+function validatePassport(passport: waiter.factory.passport.IPassport) {
     // スコープのフォーマットは、placeOrderTransaction.{sellerId}
-    const explodedScopeStrings = passport.scope.split('.');
+    // const explodedScopeStrings = passport.scope.split('.');
 
-    return (
-        passport.iss === <string>process.env.WAITER_PASSPORT_ISSUER && // 許可証発行者確認
-        // tslint:disable-next-line:no-magic-numbers
-        explodedScopeStrings.length === 2 &&
-        explodedScopeStrings[0] === 'placeOrderTransaction' && // スコープ接頭辞確認
-        explodedScopeStrings[1] === sellerIdentifier // 販売者識別子確認
-    );
+    return passport.iss === <string>process.env.WAITER_PASSPORT_ISSUER;
+    // return (
+    //     passport.iss === <string>process.env.WAITER_PASSPORT_ISSUER && // 許可証発行者確認
+    //     // tslint:disable-next-line:no-magic-numbers
+    //     explodedScopeStrings.length === 2 &&
+    //     explodedScopeStrings[0] === 'placeOrderTransaction' && // スコープ接頭辞確認
+    //     explodedScopeStrings[1] === sellerIdentifier // 販売者識別子確認
+    // );
 }
 
 /**
  * 取引に対するアクション
- * @export
  */
 export namespace action {
     /**
      * 取引に対する承認アクション
-     * @export
      */
     export namespace authorize {
         /**
          * クレジットカード承認アクションサービス
-         * @export
          */
         export import creditCard = CreditCardAuthorizeActionService;
         /**
-         * ムビチケ承認アクションサービス
-         * @export
-         */
-        export import mvtk = MvtkAuthorizeActionService;
-        /**
-         * 座席予約承認アクションサービス
-         * @export
-         */
-        export import seatReservation = SeatReservationAuthorizeActionService;
-        /**
          * Pecorino承認アクションサービス
-         * @export
          */
         export import pecorino = PecorinoAuthorizeActionService;
+        export namespace offer {
+            export namespace eventReservation {
+                export import seat = SeatReservationAuthorizeActionService;
+                export import menuItem = MenuItemAuthorizeActionService;
+            }
+        }
     }
 }
 
@@ -256,7 +248,7 @@ export function confirm(
             throw new factory.errors.Forbidden('A specified transaction is not yours.');
         }
 
-        const seller = await repos.organization.findMovieTheaterById(transaction.seller.id);
+        const seller = await repos.organization.findById(transaction.seller.id);
         debug('seller found.', seller.identifier);
 
         const customerContact = transaction.object.customerContact;
@@ -283,11 +275,12 @@ export function confirm(
         });
 
         // tslint:disable-next-line:max-line-length
-        type IOwnershipInfo = factory.ownershipInfo.IOwnershipInfo<factory.reservation.event.IEventReservation<factory.event.individualScreeningEvent.IEvent>>;
+        type IOwnershipInfo = factory.ownershipInfo.IOwnershipInfo<factory.reservation.event.IEventReservation<factory.event.IEvent>>;
         const ownershipInfos: IOwnershipInfo[] = order.acceptedOffers.map((acceptedOffer) => {
             // ownershipInfoのidentifierはコレクション内でuniqueである必要があるので、この仕様には要注意
             // saveする際に、identifierでfindOneAndUpdateしている
             const identifier = `${acceptedOffer.itemOffered.typeOf}-${acceptedOffer.itemOffered.reservedTicket.ticketToken}`;
+            const event = acceptedOffer.itemOffered.reservationFor;
 
             return {
                 typeOf: <'OwnershipInfo'>'OwnershipInfo',
@@ -302,7 +295,7 @@ export function confirm(
                 // イベント予約に対する所有権の有効期限はイベント終了日時までで十分だろう
                 // 現時点では所有権対象がイベント予約のみなので、これで問題ないが、
                 // 対象が他に広がれば、有効期間のコントロールは別でしっかり行う必要があるだろう
-                ownedThrough: acceptedOffer.itemOffered.reservationFor.endDate,
+                ownedThrough: event.endDate,
                 typeOfGood: acceptedOffer.itemOffered
             };
         });
@@ -324,30 +317,13 @@ export function confirm(
 
         // クレジットカード支払いアクション
         let payPecorinoAction: factory.action.trade.pay.IAttributes | null = null;
-        const pecorinoPayment = order.paymentMethods.find((m) => m.paymentMethod === 'Pecorino');
+        const pecorinoPayment = order.paymentMethods.find((m) => m.paymentMethod === factory.paymentMethodType.Pecorino);
         if (pecorinoPayment !== undefined) {
             payPecorinoAction = factory.action.trade.pay.createAttributes({
                 object: {
                     paymentMethod: pecorinoPayment,
                     price: order.price,
                     priceCurrency: order.priceCurrency
-                },
-                agent: transaction.agent,
-                purpose: order
-            });
-        }
-
-        // ムビチケ使用アクション
-        let useMvtkAction: factory.action.consume.use.mvtk.IAttributes | null = null;
-        const mvtkAuthorizeAction = <factory.action.authorize.mvtk.IAction>transaction.object.authorizeActions
-            .filter((a) => a.actionStatus === factory.actionStatusType.CompletedActionStatus)
-            .find((a) => a.object.typeOf === factory.action.authorize.mvtk.ObjectType.Mvtk);
-        if (mvtkAuthorizeAction !== undefined) {
-            useMvtkAction = factory.action.consume.use.mvtk.createAttributes({
-                actionStatus: factory.actionStatusType.ActiveActionStatus,
-                object: {
-                    typeOf: factory.action.consume.use.mvtk.ObjectType.Mvtk,
-                    seatInfoSyncIn: mvtkAuthorizeAction.object.seatInfoSyncIn
                 },
                 agent: transaction.agent,
                 purpose: order
@@ -382,7 +358,6 @@ export function confirm(
                     payCreditCard: (payCreditCardAction !== null) ? payCreditCardAction : undefined,
                     // Pecorino決済があれば支払アクション追加
                     payPecorino: (payPecorinoAction !== null) ? payPecorinoAction : undefined,
-                    useMvtk: (useMvtkAction !== null) ? useMvtkAction : undefined,
                     sendOrder: factory.action.transfer.send.order.createAttributes({
                         actionStatus: factory.actionStatusType.ActiveActionStatus,
                         object: order,
@@ -418,8 +393,7 @@ export function confirm(
 export function validateTransaction(transaction: factory.transaction.placeOrder.ITransaction) {
     type IAuthorizeActionResult =
         factory.action.authorize.creditCard.IResult |
-        factory.action.authorize.mvtk.IResult |
-        factory.action.authorize.seatReservation.IResult;
+        factory.action.authorize.pecorino.IResult;
 
     // クレジットカードオーソリをひとつに限定
     const creditCardAuthorizeActions = transaction.object.authorizeActions
@@ -427,14 +401,6 @@ export function validateTransaction(transaction: factory.transaction.placeOrder.
         .filter((a) => a.object.typeOf === factory.action.authorize.creditCard.ObjectType.CreditCard);
     if (creditCardAuthorizeActions.length > 1) {
         throw new factory.errors.Argument('transactionId', 'The number of credit card authorize actions must be one.');
-    }
-
-    // ムビチケ着券情報をひとつに限定
-    const mvtkAuthorizeActions = transaction.object.authorizeActions
-        .filter((a) => a.actionStatus === factory.actionStatusType.CompletedActionStatus)
-        .filter((a) => a.object.typeOf === factory.action.authorize.mvtk.ObjectType.Mvtk);
-    if (mvtkAuthorizeActions.length > 1) {
-        throw new factory.errors.Argument('transactionId', 'The number of mvtk authorize actions must be one.');
     }
 
     // agentとsellerで、承認アクションの金額が合うかどうか
@@ -456,7 +422,6 @@ export function validateTransaction(transaction: factory.transaction.placeOrder.
 /**
  * create order object from transaction parameters
  * 取引オブジェクトから注文オブジェクトを生成する
- * @export
  */
 // tslint:disable-next-line:max-func-body-length
 export function createOrderFromTransaction(params: {
@@ -468,10 +433,11 @@ export function createOrderFromTransaction(params: {
     // 実験的にメニューアイテムの注文の場合
     // tslint:disable-next-line:no-single-line-block-comment
     /* istanbul ignore next */
-    const menuItemAuthorizeActions = params.transaction.object.authorizeActions
-        .filter((a) => a.actionStatus === factory.actionStatusType.CompletedActionStatus)
-        .filter((a) => a.object.typeOf === 'Offer')
-        .filter((a) => a.object.itemOffered.typeOf === 'MenuItem');
+    const menuItemAuthorizeActions =
+        (<factory.action.authorize.offer.eventReservation.menuItem.IAction[]>params.transaction.object.authorizeActions)
+            .filter((a) => a.actionStatus === factory.actionStatusType.CompletedActionStatus)
+            .filter((a) => a.object.typeOf === 'Offer')
+            .filter((a) => a.object.itemOffered.reservedTicket.ticketedMenuItem !== undefined);
     // tslint:disable-next-line:no-single-line-block-comment
     /* istanbul ignore next */
     if (menuItemAuthorizeActions.length > 0) {
@@ -479,48 +445,33 @@ export function createOrderFromTransaction(params: {
     }
 
     // seatReservation exists?
-    const seatReservationAuthorizeActions = params.transaction.object.authorizeActions
-        .filter((a) => a.actionStatus === factory.actionStatusType.CompletedActionStatus)
-        .filter((a) => a.object.typeOf === factory.action.authorize.seatReservation.ObjectType.SeatReservation);
+    const seatReservationAuthorizeActions =
+        (<factory.action.authorize.offer.eventReservation.seat.IAction[]>params.transaction.object.authorizeActions)
+            .filter((a) => a.actionStatus === factory.actionStatusType.CompletedActionStatus)
+            .filter((a) => a.object.typeOf === 'Offer')
+            .filter((a) => a.object.itemOffered.reservedTicket.ticketedSeat !== undefined);
     if (seatReservationAuthorizeActions.length === 0) {
         throw new factory.errors.Argument('transaction', 'Seat reservation does not exist.');
     }
-    if (seatReservationAuthorizeActions.length > 1) {
-        throw new factory.errors.NotImplemented('Number of seat reservation authorizeAction must be 1.');
-    }
-    const seatReservationAuthorizeAction = seatReservationAuthorizeActions[0];
-    if (seatReservationAuthorizeAction.result === undefined) {
-        throw new factory.errors.Argument('transaction', 'Seat reservation result does not exist.');
-    }
-    if (params.transaction.object.customerContact === undefined) {
+    // if (seatReservationAuthorizeActions.length > 1) {
+    //     throw new factory.errors.NotImplemented('Number of seat reservation authorizeAction must be 1.');
+    // }
+    // const seatReservationAuthorizeAction = seatReservationAuthorizeActions[0];
+    // if (seatReservationAuthorizeAction.result === undefined) {
+    //     throw new factory.errors.Argument('transaction', 'Seat reservation result does not exist.');
+    // }
+    const cutomerContact = params.transaction.object.customerContact;
+    if (cutomerContact === undefined) {
         throw new factory.errors.Argument('transaction', 'Customer contact does not exist');
     }
 
-    const cutomerContact = params.transaction.object.customerContact;
     const orderInquiryKey = {
-        theaterCode: seatReservationAuthorizeAction.result.updTmpReserveSeatArgs.theaterCode,
-        confirmationNumber: seatReservationAuthorizeAction.result.updTmpReserveSeatResult.tmpReserveNum,
+        confirmationNumber: parseInt(`${moment().format('YYYYMMDDHHmmss')}12345`, 10),
         telephone: cutomerContact.telephone
     };
 
     // 結果作成
     const discounts: factory.order.IDiscount[] = [];
-    params.transaction.object.authorizeActions
-        .filter((a) => a.actionStatus === factory.actionStatusType.CompletedActionStatus)
-        .filter((a) => a.object.typeOf === factory.action.authorize.mvtk.ObjectType.Mvtk)
-        .forEach((mvtkAuthorizeAction: factory.action.authorize.mvtk.IAction) => {
-            const discountCode = mvtkAuthorizeAction.object.seatInfoSyncIn.knyknrNoInfo.map(
-                (knshInfo) => knshInfo.knyknrNo
-            ).join(',');
-
-            discounts.push({
-                name: 'ムビチケカード',
-                discount: (<factory.action.authorize.mvtk.IResult>mvtkAuthorizeAction.result).price,
-                discountCode: discountCode,
-                discountCurrency: factory.priceCurrency.JPY
-            });
-        });
-
     const paymentMethods: factory.order.IPaymentMethod[] = [];
 
     // クレジットカード決済があれば決済方法に追加
@@ -529,7 +480,7 @@ export function createOrderFromTransaction(params: {
         .filter((a) => a.object.typeOf === factory.action.authorize.creditCard.ObjectType.CreditCard)
         .forEach((creditCardAuthorizeAction: factory.action.authorize.creditCard.IAction) => {
             paymentMethods.push({
-                name: 'クレジットカード',
+                name: factory.paymentMethodType.CreditCard,
                 paymentMethod: factory.paymentMethodType.CreditCard,
                 paymentMethodId: (<factory.action.authorize.creditCard.IResult>creditCardAuthorizeAction.result).execTranResult.orderId
             });
@@ -538,11 +489,11 @@ export function createOrderFromTransaction(params: {
     // pecorino決済があれば決済方法に追加
     params.transaction.object.authorizeActions
         .filter((a) => a.actionStatus === factory.actionStatusType.CompletedActionStatus)
-        .filter((a) => a.object.typeOf === 'Pecorino')
+        .filter((a) => a.object.typeOf === factory.action.authorize.pecorino.ObjectType.Pecorino)
         .forEach((pecorinoAuthorizeAction: any) => {
             paymentMethods.push({
-                name: 'Pecorino',
-                paymentMethod: 'Pecorino',
+                name: factory.paymentMethodType.Pecorino,
+                paymentMethod: factory.paymentMethodType.Pecorino,
                 paymentMethodId: pecorinoAuthorizeAction.result.pecorinoTransaction.id
             });
         });
@@ -555,7 +506,7 @@ export function createOrderFromTransaction(params: {
             name: `${cutomerContact.familyName} ${cutomerContact.givenName}`,
             url: ''
         },
-        ...params.transaction.object.customerContact
+        ...cutomerContact
     };
     if (params.transaction.agent.memberOf !== undefined) {
         customer.memberOf = params.transaction.agent.memberOf;
@@ -563,45 +514,31 @@ export function createOrderFromTransaction(params: {
 
     // 座席仮予約から容認供給情報を生成する
     // 座席予約以外の注文アイテムが追加された場合は、このロジックに修正が加えられることになる
-    const acceptedOffers = factory.reservation.event.createFromCOATmpReserve({
-        updTmpReserveSeatResult: seatReservationAuthorizeAction.result.updTmpReserveSeatResult,
-        offers: seatReservationAuthorizeAction.object.offers,
-        individualScreeningEvent: seatReservationAuthorizeAction.object.individualScreeningEvent
-    }).map((eventReservation) => {
-        eventReservation.reservationStatus = factory.reservationStatusType.ReservationConfirmed;
-        eventReservation.underName.name = {
-            ja: customer.name,
-            en: customer.name
-        };
-        eventReservation.reservedTicket.underName.name = {
-            ja: customer.name,
-            en: customer.name
-        };
-
+    const acceptedOffers = seatReservationAuthorizeActions.map((a) => {
         return {
-            itemOffered: eventReservation,
-            price: eventReservation.price,
-            priceCurrency: factory.priceCurrency.JPY,
+            ...a.object,
             seller: {
-                typeOf: seatReservationAuthorizeAction.object.individualScreeningEvent.superEvent.location.typeOf,
-                name: seatReservationAuthorizeAction.object.individualScreeningEvent.superEvent.location.name.ja
+                typeOf: params.transaction.seller.typeOf,
+                name: params.transaction.seller.name
             }
         };
     });
 
     // 注文番号生成
     const orderNumber = util.format(
-        '%s-%s-%s',
+        '%s-%s',
         moment(params.orderDate).tz('Asia/Tokyo').format('YYMMDD'),
-        orderInquiryKey.theaterCode,
         orderInquiryKey.confirmationNumber
     );
+
+    type ActionResult = factory.action.authorize.offer.eventReservation.seat.IResult;
+    const price = seatReservationAuthorizeActions.reduce((a, b) => a + (<ActionResult>b.result).price, 0);
 
     return {
         typeOf: 'Order',
         seller: seller,
         customer: customer,
-        price: seatReservationAuthorizeAction.result.price - discounts.reduce((a, b) => a + b.discount, 0),
+        price: price - discounts.reduce((a, b) => a + b.discount, 0),
         priceCurrency: factory.priceCurrency.JPY,
         paymentMethods: paymentMethods,
         discounts: discounts,
@@ -609,7 +546,7 @@ export function createOrderFromTransaction(params: {
         orderNumber: orderNumber,
         acceptedOffers: acceptedOffers,
         // tslint:disable-next-line:max-line-length
-        url: `${process.env.ORDER_INQUIRY_ENDPOINT}/inquiry/login?theater=${orderInquiryKey.theaterCode}&reserve=${orderInquiryKey.confirmationNumber}`,
+        url: '',
         orderStatus: params.orderStatus,
         orderDate: params.orderDate,
         isGift: params.isGift,
@@ -632,14 +569,14 @@ export function createMenuItemOrderFromTransaction(params: {
     // 実験的にメニューアイテムの注文の場合
     // tslint:disable-next-line:no-single-line-block-comment
     /* istanbul ignore next */
-    const menuItemAuthorizeActions = params.transaction.object.authorizeActions
-        .filter((a) => a.actionStatus === factory.actionStatusType.CompletedActionStatus)
-        .filter((a) => a.object.typeOf === 'Offer')
-        .filter((a) => a.object.itemOffered.typeOf === 'MenuItem');
+    const menuItemAuthorizeActions =
+        (<factory.action.authorize.offer.eventReservation.menuItem.IAction[]>params.transaction.object.authorizeActions)
+            .filter((a) => a.actionStatus === factory.actionStatusType.CompletedActionStatus)
+            .filter((a) => a.object.typeOf === 'Offer')
+            .filter((a) => a.object.itemOffered.reservedTicket.ticketedMenuItem !== undefined);
     if (menuItemAuthorizeActions.length === 0) {
         throw new factory.errors.Argument('transaction', 'Menu item authorize action result does not exist.');
     }
-    const menuItemAuthorizeAction = menuItemAuthorizeActions[0];
 
     if (params.transaction.object.customerContact === undefined) {
         throw new factory.errors.Argument('transaction', 'Customer contact does not exist');
@@ -647,7 +584,6 @@ export function createMenuItemOrderFromTransaction(params: {
 
     const cutomerContact = params.transaction.object.customerContact;
     const orderInquiryKey = {
-        theaterCode: menuItemAuthorizeAction.object.offeredBy.identifier,
         confirmationNumber: parseInt(`${moment().format('YYYYMMDDHHmmss')}12345`, 10),
         telephone: cutomerContact.telephone
     };
@@ -663,7 +599,7 @@ export function createMenuItemOrderFromTransaction(params: {
         .filter((a) => a.object.typeOf === factory.action.authorize.creditCard.ObjectType.CreditCard)
         .forEach((creditCardAuthorizeAction: factory.action.authorize.creditCard.IAction) => {
             paymentMethods.push({
-                name: 'クレジットカード',
+                name: factory.paymentMethodType.CreditCard,
                 paymentMethod: factory.paymentMethodType.CreditCard,
                 paymentMethodId: (<factory.action.authorize.creditCard.IResult>creditCardAuthorizeAction.result).execTranResult.orderId
             });
@@ -676,7 +612,7 @@ export function createMenuItemOrderFromTransaction(params: {
         .forEach((pecorinoAuthorizeAction: any) => {
             paymentMethods.push({
                 name: 'Pecorino',
-                paymentMethod: 'Pecorino',
+                paymentMethod: factory.paymentMethodType.Pecorino,
                 paymentMethodId: pecorinoAuthorizeAction.result.pecorinoTransaction.id
             });
         });
@@ -695,47 +631,57 @@ export function createMenuItemOrderFromTransaction(params: {
         customer.memberOf = params.transaction.agent.memberOf;
     }
 
-    const price = menuItemAuthorizeActions.reduce((a, b) => a + <number>b.result.price, 0);
+    type ActionResult = factory.action.authorize.offer.eventReservation.seat.IResult;
+    const price = menuItemAuthorizeActions.reduce((a, b) => a + (<ActionResult>b.result).price, 0);
     const priceCurrency = factory.priceCurrency.JPY;
 
-    const reservation: any = {
-        typeOf: 'EventReservation',
-        provider: menuItemAuthorizeActions[0].object.offeredBy,
-        reservationFor: {
-            typeOf: 'DeliveryEvent'
-        },
-        reservedTicket: {
-            typeOf: 'Ticket',
-            ticketToken: '',
-            ticketedItem: menuItemAuthorizeActions.map((a) => {
-                return {
-                    typeOf: 'OrderItem',
-                    orderQuantity: a.object.acceptedQuantity,
-                    orderedItem: a.object.itemOffered
-                };
-            })
-        },
-        price: price,
-        priceCurrency: priceCurrency
-    };
-    const acceptedOffers = [
-        {
-            typeOf: 'Offer',
-            price: price,
-            priceCurrency: priceCurrency,
-            itemOffered: reservation,
+    // const reservation: any = {
+    //     typeOf: 'EventReservation',
+    //     provider: menuItemAuthorizeActions[0].object.offeredBy,
+    //     reservationFor: {
+    //         typeOf: 'DeliveryEvent'
+    //     },
+    //     reservedTicket: {
+    //         typeOf: 'Ticket',
+    //         ticketToken: '',
+    //         ticketedItem: menuItemAuthorizeActions.map((a) => {
+    //             return {
+    //                 typeOf: 'OrderItem',
+    //                 orderQuantity: a.object.acceptedQuantity,
+    //                 orderedItem: a.object.itemOffered
+    //             };
+    //         })
+    //     },
+    //     price: price,
+    //     priceCurrency: priceCurrency
+    // };
+    // const acceptedOffers = [
+    //     {
+    //         typeOf: 'Offer',
+    //         price: price,
+    //         priceCurrency: priceCurrency,
+    //         itemOffered: reservation,
+    //         seller: {
+    //             typeOf: params.transaction.seller.typeOf,
+    //             name: params.transaction.seller.name
+    //         }
+    //     }
+    // ];
+
+    const acceptedOffers = menuItemAuthorizeActions.map((a) => {
+        return {
+            ...a.object,
             seller: {
                 typeOf: params.transaction.seller.typeOf,
                 name: params.transaction.seller.name
             }
-        }
-    ];
+        };
+    });
 
     // 注文番号生成
     const orderNumber = util.format(
-        '%s-%s-%s',
+        '%s-%s',
         moment(params.orderDate).tz('Asia/Tokyo').format('YYMMDD'),
-        orderInquiryKey.theaterCode,
         orderInquiryKey.confirmationNumber
     );
 
@@ -762,7 +708,7 @@ export async function createEmailMessageFromTransaction(params: {
     transaction: factory.transaction.placeOrder.ITransaction;
     customerContact: factory.transaction.placeOrder.ICustomerContact;
     order: factory.order.IOrder;
-    seller: factory.organization.movieTheater.IOrganization;
+    seller: factory.organization.IOrganization;
 }): Promise<factory.creativeWork.message.email.ICreativeWork> {
     return new Promise<factory.creativeWork.message.email.ICreativeWork>((resolve, reject) => {
         const seller = params.transaction.seller;
@@ -774,21 +720,16 @@ export async function createEmailMessageFromTransaction(params: {
                 familyName: params.customerContact.familyName,
                 givenName: params.customerContact.givenName,
                 confirmationNumber: params.order.confirmationNumber,
-                eventStartDate: util.format(
-                    '%s - %s',
-                    moment(event.startDate).locale('ja').tz('Asia/Tokyo').format('YYYY年MM月DD日(ddd) HH:mm'),
-                    moment(event.endDate).tz('Asia/Tokyo').format('HH:mm')
-                ),
-                workPerformedName: event.workPerformed.name,
-                screenName: event.location.name.ja,
-                reservedSeats: params.order.acceptedOffers.map((o) => {
-                    return util.format(
-                        '%s %s ￥%s',
-                        o.itemOffered.reservedTicket.ticketedSeat.seatNumber,
-                        o.itemOffered.reservedTicket.coaTicketInfo.ticketName,
-                        o.itemOffered.reservedTicket.coaTicketInfo.salePrice
-                    );
-                }).join('\n'),
+                eventStartDate: (event !== undefined)
+                    ? util.format(
+                        '%s - %s',
+                        moment(event.startDate).locale('ja').tz('Asia/Tokyo').format('YYYY年MM月DD日(ddd) HH:mm'),
+                        moment(event.endDate).tz('Asia/Tokyo').format('HH:mm')
+                    )
+                    : '',
+                screenName: (event !== undefined && event.location !== undefined && event.location.name !== undefined)
+                    ? event.location.name.ja
+                    : '',
                 price: params.order.price,
                 inquiryUrl: params.order.url,
                 sellerName: params.order.seller.name,

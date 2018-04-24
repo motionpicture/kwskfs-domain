@@ -181,7 +181,7 @@ export function confirm(
             throw new factory.errors.NotFound('customerContact');
         }
 
-        const seller = await repos.organization.findMovieTheaterById(placeOrderTransaction.seller.id);
+        const seller = await repos.organization.findById(placeOrderTransaction.seller.id);
 
         const actionsOnOrder = await repos.action.findByOrderNumber(placeOrderTransactionResult.order.orderNumber);
         const payAction = <factory.action.trade.pay.IAction | undefined>actionsOnOrder.find(
@@ -258,7 +258,7 @@ export async function createRefundEmail(params: {
     transaction: factory.transaction.placeOrder.ITransaction;
     customerContact: factory.transaction.placeOrder.ICustomerContact;
     order: factory.order.IOrder;
-    seller: factory.organization.movieTheater.IOrganization;
+    seller: factory.organization.IOrganization;
 }): Promise<factory.creativeWork.message.email.ICreativeWork> {
     return new Promise<factory.creativeWork.message.email.ICreativeWork>((resolve, reject) => {
         const seller = params.transaction.seller;

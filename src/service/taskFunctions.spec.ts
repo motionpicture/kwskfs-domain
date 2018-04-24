@@ -56,26 +56,6 @@ describe('TaskFunctionsService.cancelCreditCard()', () => {
     });
 });
 
-describe('TaskFunctionsService.cancelMvtk()', () => {
-    afterEach(() => {
-        sandbox.restore();
-    });
-
-    it('ムビチケキャンセルサービスが正常であれば、エラーにならないはず', async () => {
-        const data = {
-            transactionId: 'transactionId'
-        };
-
-        sandbox.mock(kwskfs.service.payment).expects('cancelMvtk').once()
-            .withArgs(data.transactionId).returns(async () => Promise.resolve());
-
-        const result = await TaskFunctionsService.cancelMvtk(<any>data)({ connection: kwskfs.mongoose.connection });
-
-        assert.equal(result, undefined);
-        sandbox.verify();
-    });
-});
-
 describe('TaskFunctionsService.settleCreditCard()', () => {
     afterEach(() => {
         sandbox.restore();
@@ -90,26 +70,6 @@ describe('TaskFunctionsService.settleCreditCard()', () => {
             .withArgs(data.transactionId).returns(async () => Promise.resolve());
 
         const result = await TaskFunctionsService.payCreditCard(<any>data)({ connection: kwskfs.mongoose.connection });
-
-        assert.equal(result, undefined);
-        sandbox.verify();
-    });
-});
-
-describe('TaskFunctionsService.settleMvtk()', () => {
-    afterEach(() => {
-        sandbox.restore();
-    });
-
-    it('ムビチケ確定サービスが正常であれば、エラーにならないはず', async () => {
-        const data = {
-            transactionId: 'transactionId'
-        };
-
-        sandbox.mock(kwskfs.service.payment).expects('useMvtk').once()
-            .withArgs(data.transactionId).returns(async () => Promise.resolve());
-
-        const result = await TaskFunctionsService.useMvtk(<any>data)({ connection: kwskfs.mongoose.connection });
 
         assert.equal(result, undefined);
         sandbox.verify();

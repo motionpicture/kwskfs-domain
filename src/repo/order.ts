@@ -18,7 +18,6 @@ export class MongoRepository {
     public async findByOrderInquiryKey(orderInquiryKey: factory.order.IOrderInquiryKey) {
         const doc = await this.orderModel.findOne(
             {
-                'orderInquiryKey.theaterCode': orderInquiryKey.theaterCode,
                 'orderInquiryKey.confirmationNumber': orderInquiryKey.confirmationNumber,
                 'orderInquiryKey.telephone': orderInquiryKey.telephone
             }

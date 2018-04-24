@@ -61,17 +61,6 @@ export function cancelCreditCard(
     };
 }
 
-export function cancelMvtk(
-    data: factory.task.cancelMvtk.IData
-): IOperation<void> {
-    return async (__: {
-        connection: mongoose.Connection;
-        pecorinoAuthClient?: pecorinoapi.auth.ClientCredentials;
-    }) => {
-        await PaymentService.cancelMvtk(data.transactionId)();
-    };
-}
-
 export function payCreditCard(
     data: factory.task.payCreditCard.IData
 ): IOperation<void> {
@@ -82,22 +71,6 @@ export function payCreditCard(
         const actionRepo = new ActionRepo(settings.connection);
         const transactionRepo = new TransactionRepo(settings.connection);
         await PaymentService.payCreditCard(data.transactionId)({
-            action: actionRepo,
-            transaction: transactionRepo
-        });
-    };
-}
-
-export function useMvtk(
-    data: factory.task.useMvtk.IData
-): IOperation<void> {
-    return async (settings: {
-        connection: mongoose.Connection;
-        pecorinoAuthClient?: pecorinoapi.auth.ClientCredentials;
-    }) => {
-        const actionRepo = new ActionRepo(settings.connection);
-        const transactionRepo = new TransactionRepo(settings.connection);
-        await PaymentService.useMvtk(data.transactionId)({
             action: actionRepo,
             transaction: transactionRepo
         });

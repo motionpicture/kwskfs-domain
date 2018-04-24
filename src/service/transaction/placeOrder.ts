@@ -95,17 +95,6 @@ export function exportTasksById(transactionId: string): ITaskAndTransactionOpera
                         transactionId: transaction.id
                     }
                 }));
-                taskAttributes.push(factory.task.cancelMvtk.createAttributes({
-                    status: factory.taskStatus.Ready,
-                    runsAt: new Date(), // なるはやで実行
-                    remainingNumberOfTries: 10,
-                    lastTriedAt: null,
-                    numberOfTried: 0,
-                    executionResults: [],
-                    data: {
-                        transactionId: transaction.id
-                    }
-                }));
 
                 break;
 
@@ -291,10 +280,17 @@ export function transaction2report(transaction: factory.transaction.placeOrder.I
     if (transaction.result !== undefined) {
         const order = transaction.result.order;
         const orderItems = order.acceptedOffers;
-        const screeningEvent = orderItems[0].itemOffered.reservationFor;
+        const event = orderItems[0].itemOffered.reservationFor;
         const ticketsStr = orderItems.map(
-            // tslint:disable-next-line:max-line-length
-            (orderItem) => `${orderItem.itemOffered.reservedTicket.ticketedSeat.seatNumber} ${orderItem.itemOffered.reservedTicket.coaTicketInfo.ticketName} ￥${orderItem.itemOffered.reservedTicket.coaTicketInfo.salePrice}`
+            (orderItem) => {
+                const ticketedSeat = orderItem.itemOffered.reservedTicket.ticketedSeat;
+                if (ticketedSeat !== undefined) {
+                    // tslint:disable-next-line:max-line-length
+                    return `${ticketedSeat.seatNumber} ￥${orderItem.itemOffered.reservedTicket.totalPrice}`;
+                } else {
+                    return '';
+                }
+            }
         ).join('\n');
 
         return {
@@ -303,12 +299,12 @@ export function transaction2report(transaction: factory.transaction.placeOrder.I
             startDate: (transaction.startDate !== undefined) ? transaction.startDate.toISOString() : '',
             endDate: (transaction.endDate !== undefined) ? transaction.endDate.toISOString() : '',
             customer: order.customer,
-            eventName: screeningEvent.superEvent.workPerformed.name,
-            eventStartDate: screeningEvent.startDate.toISOString(),
-            eventEndDate: screeningEvent.endDate.toISOString(),
-            superEventLocationBranchCode: `${screeningEvent.superEvent.location.branchCode}`,
-            superEventLocation: screeningEvent.superEvent.location.name.ja,
-            eventLocation: screeningEvent.location.name.ja,
+            eventName: (event.name !== undefined) ? event.name.ja : '',
+            eventStartDate: (event.startDate !== undefined) ? event.startDate.toISOString() : '',
+            eventEndDate: (event.endDate !== undefined) ? event.endDate.toISOString() : '',
+            superEventLocationBranchCode: '',
+            superEventLocation: '',
+            eventLocation: (event.location !== undefined && event.location.name !== undefined) ? event.location.name.ja : '',
             reservedTickets: ticketsStr,
             orderNumber: order.orderNumber,
             confirmationNumber: order.confirmationNumber.toString(),

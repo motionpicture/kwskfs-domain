@@ -469,7 +469,7 @@ describe('service.transaction.returnOrder.confirm()', () => {
         const organizationRepo = new kwskfs.repository.Organization(kwskfs.mongoose.connection);
 
         sandbox.mock(transactionRepo).expects('findReturnOrderInProgressById').once().resolves(returnOrderTransaction);
-        sandbox.mock(organizationRepo).expects('findMovieTheaterById').once()
+        sandbox.mock(organizationRepo).expects('findById').once()
             .withArgs(seller.id).resolves(seller);
         sandbox.mock(actionRepo).expects('findByOrderNumber').once()
             .withArgs(order.orderNumber).resolves(actionsOnOrder);
@@ -527,7 +527,7 @@ describe('service.transaction.returnOrder.confirm()', () => {
         const organizationRepo = new kwskfs.repository.Organization(kwskfs.mongoose.connection);
 
         sandbox.mock(transactionRepo).expects('findReturnOrderInProgressById').once().resolves(returnOrderTransaction);
-        sandbox.mock(organizationRepo).expects('findMovieTheaterById').never();
+        sandbox.mock(organizationRepo).expects('findById').never();
         sandbox.mock(actionRepo).expects('findByOrderNumber').never();
         sandbox.mock(transactionRepo).expects('confirmReturnOrder').never();
 
@@ -573,7 +573,7 @@ describe('service.transaction.returnOrder.confirm()', () => {
         const organizationRepo = new kwskfs.repository.Organization(kwskfs.mongoose.connection);
 
         sandbox.mock(transactionRepo).expects('findReturnOrderInProgressById').once().resolves(returnOrderTransaction);
-        sandbox.mock(organizationRepo).expects('findMovieTheaterById').never();
+        sandbox.mock(organizationRepo).expects('findById').never();
         sandbox.mock(actionRepo).expects('findByOrderNumber').never();
         sandbox.mock(transactionRepo).expects('confirmReturnOrder').never();
 
@@ -629,7 +629,7 @@ describe('service.transaction.returnOrder.confirm()', () => {
         const organizationRepo = new kwskfs.repository.Organization(kwskfs.mongoose.connection);
 
         sandbox.mock(transactionRepo).expects('findReturnOrderInProgressById').once().resolves(returnOrderTransaction);
-        sandbox.mock(organizationRepo).expects('findMovieTheaterById').never();
+        sandbox.mock(organizationRepo).expects('findById').never();
         sandbox.mock(actionRepo).expects('findByOrderNumber').never();
         sandbox.mock(transactionRepo).expects('confirmReturnOrder').never();
 
@@ -686,7 +686,7 @@ describe('service.transaction.returnOrder.confirm()', () => {
         const organizationRepo = new kwskfs.repository.Organization(kwskfs.mongoose.connection);
 
         sandbox.mock(transactionRepo).expects('findReturnOrderInProgressById').once().resolves(returnOrderTransaction);
-        sandbox.mock(organizationRepo).expects('findMovieTheaterById').once().withArgs(seller.id).resolves(seller);
+        sandbox.mock(organizationRepo).expects('findById').once().withArgs(seller.id).resolves(seller);
         sandbox.mock(actionRepo).expects('findByOrderNumber').once().withArgs(order.orderNumber).resolves(actionsOnOrder);
         sandbox.mock(transactionRepo).expects('confirmReturnOrder').never();
 

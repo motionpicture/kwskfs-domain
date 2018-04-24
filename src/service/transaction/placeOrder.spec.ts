@@ -120,8 +120,8 @@ describe('exportTasksById()', () => {
         sandbox.verify();
     });
 
-    it('期限切れ取引であれば3つのタスクがエクスポートされるはず', async () => {
-        const numberOfTasks = 3;
+    it('期限切れ取引であれば2つのタスクがエクスポートされるはず', async () => {
+        const numberOfTasks = 2;
         const transaction = {
             id: 'transactionId',
             status: kwskfs.factory.transactionStatusType.Expired

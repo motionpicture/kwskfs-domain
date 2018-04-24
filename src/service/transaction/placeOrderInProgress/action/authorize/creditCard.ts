@@ -54,7 +54,7 @@ export function create(
         // }
 
         // GMOショップ情報取得
-        const movieTheater = await repos.organization.findMovieTheaterById(transaction.seller.id);
+        const organization = await repos.organization.findById(transaction.seller.id);
 
         // 承認アクションを開始する
         const actionAttributes = factory.action.authorize.creditCard.createAttributes({
@@ -71,6 +71,10 @@ export function create(
         });
         const action = await repos.action.start<factory.action.authorize.creditCard.IAction>(actionAttributes);
 
+        if (organization.gmoInfo === undefined) {
+            throw new factory.errors.NotFound('organization.gmoInfo');
+        }
+
         // GMOオーソリ取得
         let entryTranArgs: GMO.services.credit.IEntryTranArgs;
         let execTranArgs: GMO.services.credit.IExecTranArgs;
@@ -78,8 +82,8 @@ export function create(
         let execTranResult: GMO.services.credit.IExecTranResult;
         try {
             entryTranArgs = {
-                shopId: movieTheater.gmoInfo.shopId,
-                shopPass: movieTheater.gmoInfo.shopPass,
+                shopId: organization.gmoInfo.shopId,
+                shopPass: organization.gmoInfo.shopPass,
                 orderId: orderId,
                 jobCd: GMO.utils.util.JobCd.Auth,
                 amount: amount

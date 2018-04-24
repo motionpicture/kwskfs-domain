@@ -1,5 +1,5 @@
 /**
- * 劇場組織検索サンプル
+ * 組織検索サンプル
  * @ignore
  */
 
@@ -9,8 +9,12 @@ async function main() {
     await kwskfs.mongoose.connect(process.env.MONGOLAB_URI);
 
     const repository = new kwskfs.repository.Organization(kwskfs.mongoose.connection);
-    const theaters = await repository.searchMovieTheaters({});
-    console.log('theaters:', theaters);
+    const organizations = await repository.search({
+        typeOf: kwskfs.factory.organizationType.Restaurant,
+        identifiers: [],
+        limit: 100
+    });
+    console.log('organizations found.', organizations);
 
     await kwskfs.mongoose.disconnect();
 }

@@ -2,10 +2,8 @@
  * 注文サービス
  */
 
-import * as COA from '@motionpicture/coa-service';
 import * as factory from '@motionpicture/kwskfs-factory';
 import * as createDebug from 'debug';
-import * as googleLibphonenumber from 'google-libphonenumber';
 
 import { MongoRepository as ActionRepo } from '../repo/action';
 import { MongoRepository as OrderRepo } from '../repo/order';
@@ -131,23 +129,6 @@ function onCreate(transactionId: string, orderActionAttributes: factory.action.t
                     }
                 }));
             }
-
-            // ムビチケ使用
-            // tslint:disable-next-line:no-single-line-block-comment
-            /* istanbul ignore else */
-            if (orderPotentialActions.useMvtk !== undefined) {
-                taskAttributes.push(factory.task.useMvtk.createAttributes({
-                    status: factory.taskStatus.Ready,
-                    runsAt: now, // なるはやで実行
-                    remainingNumberOfTries: 10,
-                    lastTriedAt: null,
-                    numberOfTried: 0,
-                    executionResults: [],
-                    data: {
-                        transactionId: transactionId
-                    }
-                }));
-            }
         }
 
         // タスク保管
@@ -187,39 +168,6 @@ export function cancelReservations(returnOrderTransactionId: string) {
 
         try {
             const order = placeOrderTransactionResult.order;
-
-            // 非同期でCOA本予約取消
-            // COAから内容抽出
-            // 電話番号のフォーマットを日本人にリーダブルに調整(COAではこのフォーマットで扱うので)
-            const phoneUtil = googleLibphonenumber.PhoneNumberUtil.getInstance();
-            const phoneNumber = phoneUtil.parse(order.orderInquiryKey.telephone, 'JP');
-            let telNum = phoneUtil.format(phoneNumber, googleLibphonenumber.PhoneNumberFormat.NATIONAL);
-            // COAでは数字のみ受け付けるので数字以外を除去
-            telNum = telNum.replace(/[^\d]/g, '');
-            const stateReserveResult = await COA.services.reserve.stateReserve({
-                theaterCode: order.orderInquiryKey.theaterCode,
-                reserveNum: order.orderInquiryKey.confirmationNumber,
-                telNum: telNum
-            });
-            debug('COA stateReserveResult is', stateReserveResult);
-
-            // 予約が存在すればCOA購入チケット取消
-            // tslint:disable-next-line:no-single-line-block-comment
-            /* istanbul ignore else */
-            if (stateReserveResult !== null) {
-                debug('deleting COA reservation...');
-                await COA.services.reserve.delReserve({
-                    theaterCode: order.orderInquiryKey.theaterCode,
-                    reserveNum: order.orderInquiryKey.confirmationNumber,
-                    telNum: telNum,
-                    dateJouei: stateReserveResult.dateJouei,
-                    titleCode: stateReserveResult.titleCode,
-                    titleBranchNum: stateReserveResult.titleBranchNum,
-                    timeBegin: stateReserveResult.timeBegin,
-                    listSeat: stateReserveResult.listTicket
-                });
-                debug('COA delReserve processed.');
-            }
 
             // 所有権の予約ステータスを変更
             const ownershipInfos = placeOrderTransactionResult.ownershipInfos;
