@@ -1,12 +1,21 @@
 
 import * as factory from '@motionpicture/kwskfs-factory';
+import * as createDebug from 'debug';
 // import * as moment from 'moment';
 import { Connection } from 'mongoose';
 import eventModel from './mongoose/model/event';
 
+const debug = createDebug('kwskfs-domain:repository:event');
+
+export type IEvent<T> =
+    T extends factory.eventType.FoodEvent ? factory.event.food.IEvent :
+    T extends factory.eventType.SportsEvent ? factory.event.sports.IEvent :
+    factory.event.IEvent;
+
 /**
  * イベント抽象リポジトリー
  */
+// tslint:disable-next-line:no-unnecessary-class
 export abstract class Repository {
     // public abstract async saveScreeningEvent(screeningEvent: factory.event.screeningEvent.IEvent): Promise<void>;
     // public abstract async saveIndividualScreeningEvent(
@@ -167,5 +176,36 @@ export class MongoRepository implements Repository {
         }
 
         return doc.toObject();
+    }
+
+    /**
+     * イベント検索
+     */
+    public async search<T extends factory.eventType>(searchConditions: {
+        typeOf: T;
+        identifiers: string[];
+        limit: number;
+    }): Promise<IEvent<T>[]> {
+        // 検索条件を作成
+        const conditions: any = {
+            typeOf: searchConditions.typeOf
+        };
+        debug('searchConditions:', searchConditions);
+
+        // todo 検索条件を指定できるように改修
+        if (Array.isArray(searchConditions.identifiers) && searchConditions.identifiers.length > 0) {
+            conditions.identifier = { $in: searchConditions.identifiers };
+        }
+
+        // GMOのセキュアな情報を公開しないように注意
+        return this.eventModel.find(
+            conditions,
+            {
+            }
+        )
+            .setOptions({ maxTimeMS: 10000 })
+            .limit(searchConditions.limit)
+            .exec()
+            .then((docs) => docs.map((doc) => doc.toObject()));
     }
 }
