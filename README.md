@@ -35,6 +35,11 @@ npm install @motionpicture/kwskfs-domain
 | `WAITER_SECRET`                             | true     |                                   | WAITER許可証トークン秘密鍵       |
 | `WAITER_PASSPORT_ISSUER`                    | true     | https://kwskfs-waiter-example.com | WAITER許可証発行者           |
 | `ORDER_INQUIRY_ENDPOINT`                    | true     |                                   | 注文照会エンドポイント            |
+| `AWS_ACCESS_KEY_ID`                         | true     |                                   | AWSアクセスキー              |
+| `AWS_SECRET_ACCESS_KEY`                     | true     |                                   | AWSシークレットアクセスキー        |
+| `COGNITO_USER_POOL_ID`                      | true     |                                   | CognitoユーザープールID       |
+| `BLUELAB_API_ENDPOINT`                      | true     |                                   | Bluelab APIエンドポイント     |
+| `BLUELAB_API_KEY`                           | true     |                                   | Bluelab APIキー          |
 
 ### Search individual screening events sample
 

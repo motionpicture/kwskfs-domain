@@ -31,6 +31,15 @@ const locationSchema = new mongoose.Schema(
     }
 );
 
+const paymentAcceptedSchema = new mongoose.Schema(
+    {},
+    {
+        id: false,
+        _id: false,
+        strict: false
+    }
+);
+
 /**
  * 組織スキーマ
  * @ignore
@@ -49,7 +58,8 @@ const schema = new mongoose.Schema(
         gmoInfo: gmoInfoSchema,
         parentOrganization: parentOrganizationSchema,
         telephone: String,
-        location: locationSchema
+        location: locationSchema,
+        paymentAccepted: [paymentAcceptedSchema]
     },
     {
         collection: 'organizations',

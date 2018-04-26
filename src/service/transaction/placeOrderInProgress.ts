@@ -47,6 +47,10 @@ export interface IStartParams {
      */
     sellerId: string;
     /**
+     * APIアクセストークン
+     */
+    accessToken: string;
+    /**
      * APIクライアント
      */
     clientUser: factory.clientUser.IClientUser;
@@ -111,6 +115,7 @@ export function start(params: IStartParams):
             object: {
                 passportToken: params.passportToken,
                 passport: passport,
+                accessToken: params.accessToken,
                 clientUser: params.clientUser,
                 authorizeActions: []
             },

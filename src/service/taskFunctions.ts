@@ -10,6 +10,7 @@ import * as mongoose from 'mongoose';
 
 import { MongoRepository as ActionRepo } from '../repo/action';
 import { MongoRepository as OrderRepo } from '../repo/order';
+import { MongoRepository as OrganizationRepo } from '../repo/organization';
 import { MongoRepository as OwnershipInfoRepo } from '../repo/ownershipInfo';
 import { MongoRepository as TaskRepo } from '../repo/task';
 import { MongoRepository as TransactionRepo } from '../repo/transaction';
@@ -89,9 +90,11 @@ export function payPecorino(
         }
 
         const actionRepo = new ActionRepo(settings.connection);
+        const organizationRepo = new OrganizationRepo(settings.connection);
         const transactionRepo = new TransactionRepo(settings.connection);
         await PaymentService.payPecorino(data.transactionId)({
             action: actionRepo,
+            organization: organizationRepo,
             transaction: transactionRepo,
             pecorinoAuthClient: settings.pecorinoAuthClient
         });
