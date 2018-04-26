@@ -54,10 +54,11 @@ export function payPecorino(transactionId: string) {
 
             // アクション開始
             const action = await repos.action.start<factory.action.trade.pay.IAction>(payActionAttributes);
+            let bluelabParams: IBluelabParams | null = null;
             let blueLabResult: any = null;
             let username: string | null = null;
             let bluelabPaymentMethod: IBluelabPaymentMethod | null = null;
-            let accountNubmer: string | null | undefined = null;
+            let accountNumber: string | null | undefined = null;
 
             try {
                 // 支払取引確定
@@ -101,20 +102,22 @@ export function payPecorino(transactionId: string) {
                     );
 
                     // bluelab口座番号を取得
-                    accountNubmer = await getBluelabAccountNumber(
+                    accountNumber = await getBluelabAccountNumber(
                         <string>process.env.AWS_ACCESS_KEY_ID,
                         <string>process.env.AWS_SECRET_ACCESS_KEY,
                         <string>process.env.COGNITO_USER_POOL_ID,
                         username
                     );
 
-                    if (accountNubmer !== undefined && bluelabPaymentMethod !== undefined) {
-                        blueLabResult = await processBlueLab({
+                    if (accountNumber !== undefined && bluelabPaymentMethod !== undefined) {
+                        bluelabParams = {
                             accessToken: transaction.object.accessToken,
-                            order: transactionResult.order,
-                            bluelabPaymentMethod: bluelabPaymentMethod,
-                            paymentMethodID: accountNubmer
-                        });
+                            paymentAmount: transactionResult.order.price,
+                            paymentMethodID: accountNumber,
+                            beneficiaryAccountInformation: bluelabPaymentMethod,
+                            paymentDetailsList: transactionResult.order
+                        };
+                        blueLabResult = await processBlueLab(bluelabParams);
                     }
                 }
             } catch (error) {
@@ -133,10 +136,11 @@ export function payPecorino(transactionId: string) {
             // アクション完了
             debug('ending action...');
             const actionResult: factory.action.trade.pay.IResult = <any>{
+                bluelabParams: bluelabParams,
                 blueLabResult: blueLabResult,
                 username: username,
                 bluelabPaymentMethod: bluelabPaymentMethod,
-                accountNubmer: accountNubmer
+                accountNumber: accountNumber
             };
             await repos.action.complete(payActionAttributes.typeOf, action.id, actionResult);
         }
@@ -177,17 +181,24 @@ export async function getBluelabAccountNumber(
     });
 }
 
+export interface IBluelabParams {
+    accessToken: string;
+    paymentAmount: number;
+    paymentMethodID: string;
+    beneficiaryAccountInformation: {
+        branchNumber: string;
+        accountNumber: string;
+        accountName: string;
+    };
+    paymentDetailsList: factory.order.IOrder;
+}
+
 /**
  * Blue Lab連携プロセス
  * @param accessToken アクセストークン
  * @param order 注文内容
  */
-export async function processBlueLab(params: {
-    accessToken: string;
-    order: factory.order.IOrder;
-    bluelabPaymentMethod: IBluelabPaymentMethod;
-    paymentMethodID: string;
-}) {
+export async function processBlueLab(params: IBluelabParams) {
     const response = await request.post({
         url: `${process.env.BLUELAB_API_ENDPOINT}/dev/payment/purchase`,
         headers: {
@@ -196,14 +207,14 @@ export async function processBlueLab(params: {
         },
         // auth: { bearer: params.accessToken },
         body: {
-            paymentAmount: params.order.price,
+            paymentAmount: params.paymentAmount,
             paymentMethodID: params.paymentMethodID,
             beneficiaryAccountInformation: {
-                branchNumber: params.bluelabPaymentMethod.branchNumber,
-                accountNumber: params.bluelabPaymentMethod.accountNumber,
-                accountName: params.bluelabPaymentMethod.accountName
+                branchNumber: params.beneficiaryAccountInformation.branchNumber,
+                accountNumber: params.beneficiaryAccountInformation.accountNumber,
+                accountName: params.beneficiaryAccountInformation.accountName
             },
-            paymentDetailsList: params.order
+            paymentDetailsList: params.paymentDetailsList
         },
         json: true,
         simple: false,
