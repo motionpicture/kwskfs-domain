@@ -90,8 +90,8 @@ export function payPecorino(transactionId: string) {
                 // await depositTransactionService.confirm({ transactionId: depositTransaction.id });
 
                 // Blue Lab API連携
-                if (transaction.agent.memberOf !== undefined) {
-                    const username = transaction.agent.memberOf.membershipNumber;
+                if (transaction.object.clientUser.username !== undefined) {
+                    const username = transaction.object.clientUser.username;
                     const seller = await repos.organization.findById(transaction.seller.id);
                     const bluelabPaymentMethod = <IBluelabPaymentMethod>seller.paymentAccepted.find(
                         (p) => p.paymentMethodType === factory.paymentMethodType.Bluelab
