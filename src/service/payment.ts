@@ -55,6 +55,9 @@ export function payPecorino(transactionId: string) {
             // アクション開始
             const action = await repos.action.start<factory.action.trade.pay.IAction>(payActionAttributes);
             let blueLabResult: any = null;
+            let username: string | null = null;
+            let bluelabPaymentMethod: IBluelabPaymentMethod | null = null;
+            let accountNubmer: string | null | undefined = null;
 
             try {
                 // 支払取引確定
@@ -91,14 +94,14 @@ export function payPecorino(transactionId: string) {
 
                 // Blue Lab API連携
                 if (transaction.object.clientUser.username !== undefined) {
-                    const username = transaction.object.clientUser.username;
+                    username = transaction.object.clientUser.username;
                     const seller = await repos.organization.findById(transaction.seller.id);
-                    const bluelabPaymentMethod = <IBluelabPaymentMethod>seller.paymentAccepted.find(
+                    bluelabPaymentMethod = <IBluelabPaymentMethod>seller.paymentAccepted.find(
                         (p) => p.paymentMethodType === factory.paymentMethodType.Bluelab
                     );
 
                     // bluelab口座番号を取得
-                    const accountNubmer = await getBluelabAccountNumber(
+                    accountNubmer = await getBluelabAccountNumber(
                         <string>process.env.AWS_ACCESS_KEY_ID,
                         <string>process.env.AWS_SECRET_ACCESS_KEY,
                         <string>process.env.COGNITO_USER_POOL_ID,
@@ -130,7 +133,10 @@ export function payPecorino(transactionId: string) {
             // アクション完了
             debug('ending action...');
             const actionResult: factory.action.trade.pay.IResult = <any>{
-                blueLabResult: blueLabResult
+                blueLabResult: blueLabResult,
+                username: username,
+                bluelabPaymentMethod: bluelabPaymentMethod,
+                accountNubmer: accountNubmer
             };
             await repos.action.complete(payActionAttributes.typeOf, action.id, actionResult);
         }
@@ -164,7 +170,6 @@ export async function getBluelabAccountNumber(
                         reject(new Error('adminGetUser data.UserAttributes undefined'));
                     } else {
                         const attribute = data.UserAttributes.find((a) => a.Name === 'custom:bluelabAccountNumber');
-
                         resolve((attribute !== undefined) ? attribute.Value : undefined);
                     }
                 }
