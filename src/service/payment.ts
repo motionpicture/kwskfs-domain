@@ -111,7 +111,7 @@ export function payPecorino(transactionId: string) {
 
                     if (accountNumber !== undefined && bluelabPaymentMethod !== undefined) {
                         bluelabParams = {
-                            accessToken: transaction.object.accessToken,
+                            accessToken: username,
                             paymentAmount: transactionResult.order.price,
                             paymentMethodID: accountNumber,
                             beneficiaryAccountInformation: bluelabPaymentMethod,
