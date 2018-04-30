@@ -6,6 +6,7 @@
 import * as factory from '@motionpicture/kwskfs-factory';
 import * as pecorinoapi from '@motionpicture/pecorino-api-nodejs-client';
 import * as createDebug from 'debug';
+import { BAD_REQUEST, INTERNAL_SERVER_ERROR } from 'http-status';
 import * as moment from 'moment';
 
 import { MongoRepository as ActionRepo } from '../../../../../repo/action';
@@ -22,18 +23,25 @@ export type ICreateOperation<T> = (repos: {
 /**
  * Pecorino残高差し押さえ
  */
-export function create(
-    __: string,
-    transactionId: string,
-    price: number
-): ICreateOperation<factory.action.authorize.pecorino.IAction> {
+export function create(params: {
+    transactionId: string;
+    price: number;
+    /**
+     * Pecorino口座ID
+     */
+    fromAccountId: string;
+    /**
+     * 支払取引メモ
+     */
+    notes?: string;
+}): ICreateOperation<factory.action.authorize.pecorino.IAction> {
     // tslint:disable-next-line:max-func-body-length
     return async (repos: {
         action: ActionRepo;
         transaction: TransactionRepo;
         payTransactionService: pecorinoapi.service.transaction.Pay;
     }) => {
-        const transaction = await repos.transaction.findPlaceOrderInProgressById(transactionId);
+        const transaction = await repos.transaction.findPlaceOrderInProgressById(params.transactionId);
 
         // 他者口座による決済も可能にするためにコメントアウト
         // 基本的に、自分の口座のオーソリを他者に与えても得しないので、
@@ -46,8 +54,8 @@ export function create(
         const actionAttributes = factory.action.authorize.pecorino.createAttributes({
             object: {
                 typeOf: factory.action.authorize.pecorino.ObjectType.Pecorino,
-                transactionId: transactionId,
-                price: price
+                transactionId: params.transactionId,
+                price: params.price
             },
             agent: transaction.agent,
             recipient: transaction.seller,
@@ -58,7 +66,7 @@ export function create(
         // Pecorinoオーソリ取得
         let pecorinoTransaction: any;
         try {
-            debug('starting pecorino pay transaction...', price);
+            debug('starting pecorino pay transaction...', params.price);
             pecorinoTransaction = await repos.payTransactionService.start({
                 // tslint:disable-next-line:no-magic-numbers
                 expires: moment().add(60, 'minutes').toDate(),
@@ -68,8 +76,9 @@ export function create(
                     name: transaction.seller.name,
                     url: transaction.seller.url
                 },
-                price: price,
-                notes: 'kwskfs-placeOrderTransaction'
+                price: params.price,
+                notes: (params.notes !== undefined) ? params.notes : '川崎屋台村 支払取引',
+                fromAccountId: params.fromAccountId
             });
             debug('pecorinoTransaction started.', pecorinoTransaction.id);
         } catch (error) {
@@ -82,6 +91,13 @@ export function create(
                 // 失敗したら仕方ない
             }
 
+            // PecorinoAPIのレスポンスステータスコードが4xxであればクライアントエラー
+            if (Array.isArray(error.errors) && error.errors[0] !== undefined && error.errors[0].name === 'PecorinoError') {
+                if (error.code >= BAD_REQUEST && error.code < INTERNAL_SERVER_ERROR) {
+                    throw new factory.errors.Argument('fromAccountId', error.message);
+                }
+            }
+
             throw new Error(error);
         }
 
@@ -89,7 +105,7 @@ export function create(
         debug('ending authorize action...');
 
         const actionResult: factory.action.authorize.pecorino.IResult = {
-            price: price,
+            price: params.price,
             pecorinoTransaction: pecorinoTransaction,
             pecorinoEndpoint: repos.payTransactionService.options.endpoint
         };
