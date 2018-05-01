@@ -10,7 +10,7 @@
   ],
   "dependencies": {
     "@motionpicture/gmo-service": "^4.2.0",
-    "@motionpicture/kwskfs-factory": "0.0.0-alpha.4",
+    "@motionpicture/kwskfs-factory": "0.0.0-alpha.5",
     "@motionpicture/pecorino-api-nodejs-client": "0.0.0-alpha.4",
     "@motionpicture/waiter-domain": "^2.0.2",
     "@sendgrid/mail": "^6.2.1",

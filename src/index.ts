@@ -29,6 +29,7 @@ import * as UtilService from './service/util';
 import { MongoRepository as ActionRepo } from './repo/action';
 import { MongoRepository as PrintActionRepo } from './repo/action/print';
 import { MongoRepository as ClientRepo } from './repo/client';
+import { RedisRepository as ConfirmationNumberRepo } from './repo/confirmationNumber';
 import { MongoRepository as CreativeWorkRepo } from './repo/creativeWork';
 import { MongoRepository as EventRepo } from './repo/event';
 import { MongoRepository as GMONotificationRepo } from './repo/gmoNotification';
@@ -87,6 +88,7 @@ export namespace repository {
     }
     export class Client extends ClientRepo { }
     export class CreativeWork extends CreativeWorkRepo { }
+    export class ConfirmationNumber extends ConfirmationNumberRepo { }
     export class Event extends EventRepo { }
     export class GMONotification extends GMONotificationRepo { }
     export class Order extends OrderRepo { }

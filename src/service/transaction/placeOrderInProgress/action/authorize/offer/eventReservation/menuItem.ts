@@ -46,6 +46,14 @@ export function create(params: {
         }
 
         const event = await repos.event.findByIdentifier(params.eventType, params.eventIdentifier);
+        if (event.attendee === undefined) {
+            throw new factory.errors.NotFound('Attendee for this event');
+        }
+
+        const attendee = event.attendee.find((a) => (<factory.organization.IOrganization>a).identifier === params.organizationIdentifier);
+        if (attendee === undefined) {
+            throw new factory.errors.Argument('organizationIdentifier', 'Not attend the event.');
+        }
 
         const restaurants = await repos.organization.search({
             typeOf: factory.organizationType.Restaurant,
@@ -114,6 +122,7 @@ export function create(params: {
                     numMenuItems: params.acceptedQuantity,
                     price: price,
                     priceCurrency: acceptedOffer.priceCurrency,
+                    provider: attendee,
                     reservationFor: event,
                     reservationNumber: '',
                     reservationStatus: factory.reservationStatusType.ReservationHold,
