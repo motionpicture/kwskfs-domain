@@ -1,13 +1,14 @@
 /**
  * 決済サービス
  */
-
 import * as GMO from '@motionpicture/gmo-service';
 import * as factory from '@motionpicture/kwskfs-factory';
 import * as pecorinoapi from '@motionpicture/pecorino-api-nodejs-client';
 import * as AWS from 'aws-sdk';
 import * as createDebug from 'debug';
-import * as request from 'request-promise-native';
+import { OK } from 'http-status';
+
+import { BluelabService, IProcessPaymentParams, IProcessPaymentResult } from './payment/bluelab';
 
 import { MongoRepository as ActionRepo } from '../repo/action';
 import { MongoRepository as OrganizationRepo } from '../repo/organization';
@@ -16,13 +17,14 @@ import { MongoRepository as TransactionRepo } from '../repo/transaction';
 
 const debug = createDebug('kwskfs-domain:service:payment');
 
+const BLUELAB_ATTRIBUTE_NAME = 'bluelabAccountNumber';
+
 export type IBluelabPaymentMethod = factory.organization.IPaymentAccepted<factory.paymentMethodType.Bluelab>;
 
 /**
  * Pecorino支払実行
  * @param transactionId 取引ID
  */
-// tslint:disable-next-line:max-func-body-length
 export function payPecorino(transactionId: string) {
     // tslint:disable-next-line:max-func-body-length
     return async (repos: {
@@ -54,11 +56,8 @@ export function payPecorino(transactionId: string) {
 
             // アクション開始
             const action = await repos.action.start<factory.action.trade.pay.IAction>(payActionAttributes);
-            let bluelabParams: IBluelabParams | null = null;
-            let blueLabResult: any = null;
-            let username: string | null = null;
-            let bluelabPaymentMethod: IBluelabPaymentMethod | null = null;
-            let accountNumber: string | null | undefined = null;
+            let bluelabProcessPaymentParams: IProcessPaymentParams | null = null;
+            let bluelabProcessPaymentResult: IProcessPaymentResult | null = null;
 
             try {
                 // 支払取引確定
@@ -93,31 +92,55 @@ export function payPecorino(transactionId: string) {
                 // });
                 // await depositTransactionService.confirm({ transactionId: depositTransaction.id });
 
-                // Blue Lab API連携
                 if (transaction.object.clientUser.username !== undefined) {
-                    username = transaction.object.clientUser.username;
+                    const username = transaction.object.clientUser.username;
                     const seller = await repos.organization.findById(transaction.seller.id);
-                    bluelabPaymentMethod = <IBluelabPaymentMethod>seller.paymentAccepted.find(
+                    const bluelabPaymentMethod = <IBluelabPaymentMethod>seller.paymentAccepted.find(
                         (p) => p.paymentMethodType === factory.paymentMethodType.Bluelab
                     );
 
-                    // bluelab口座番号を取得
-                    accountNumber = await getBluelabAccountNumber(
-                        <string>process.env.AWS_ACCESS_KEY_ID,
-                        <string>process.env.AWS_SECRET_ACCESS_KEY,
-                        <string>process.env.COGNITO_USER_POOL_ID,
-                        username
-                    );
+                    // bluelab決済方法が組織に登録されていればそのbluelab連携
+                    if (bluelabPaymentMethod !== undefined) {
+                        const bluelab = new BluelabService({
+                            endpoint: <string>process.env.BLUELAB_API_ENDPOINT,
+                            apiKey: <string>process.env.BLUELAB_API_KEY
+                        });
 
-                    if (accountNumber !== undefined && bluelabPaymentMethod !== undefined) {
-                        bluelabParams = {
-                            accessToken: username,
-                            paymentAmount: transactionResult.order.price,
-                            paymentMethodID: accountNumber,
-                            beneficiaryAccountInformation: bluelabPaymentMethod,
-                            paymentDetailsList: transactionResult.order
-                        };
-                        blueLabResult = await processBlueLab(bluelabParams);
+                        // bluelab口座番号を取得
+                        let accountNumber = await getBluelabAccountNumber(
+                            <string>process.env.AWS_ACCESS_KEY_ID,
+                            <string>process.env.AWS_SECRET_ACCESS_KEY,
+                            <string>process.env.COGNITO_USER_POOL_ID,
+                            username
+                        );
+
+                        // 口座未開設であれば開設する
+                        if (accountNumber === undefined) {
+                            const openAccountResult = await bluelab.openAccount({ accessToken: username });
+                            if (openAccountResult.statusCode === OK) {
+                                accountNumber = openAccountResult.body.registInfo.paymentMethodId;
+
+                                // Cognitoに登録
+                                await registerBluelabAccountNumber(
+                                    <string>process.env.AWS_ACCESS_KEY_ID,
+                                    <string>process.env.AWS_SECRET_ACCESS_KEY,
+                                    <string>process.env.COGNITO_USER_POOL_ID,
+                                    username,
+                                    accountNumber
+                                );
+                            }
+                        }
+
+                        if (accountNumber !== undefined) {
+                            bluelabProcessPaymentParams = {
+                                accessToken: username,
+                                paymentAmount: transactionResult.order.price,
+                                paymentMethodID: accountNumber,
+                                beneficiaryAccountInformation: bluelabPaymentMethod,
+                                paymentDetailsList: transactionResult.order
+                            };
+                            bluelabProcessPaymentResult = await bluelab.processPayment(bluelabProcessPaymentParams);
+                        }
                     }
                 }
             } catch (error) {
@@ -136,11 +159,8 @@ export function payPecorino(transactionId: string) {
             // アクション完了
             debug('ending action...');
             const actionResult: factory.action.trade.pay.IResult = <any>{
-                bluelabParams: bluelabParams,
-                blueLabResult: blueLabResult,
-                username: username,
-                bluelabPaymentMethod: bluelabPaymentMethod,
-                accountNumber: accountNumber
+                bluelabProcessPaymentParams: bluelabProcessPaymentParams,
+                bluelabProcessPaymentResult: bluelabProcessPaymentResult
             };
             await repos.action.complete(payActionAttributes.typeOf, action.id, actionResult);
         }
@@ -173,7 +193,7 @@ export async function getBluelabAccountNumber(
                     if (data.UserAttributes === undefined) {
                         reject(new Error('adminGetUser data.UserAttributes undefined'));
                     } else {
-                        const attribute = data.UserAttributes.find((a) => a.Name === 'custom:bluelabAccountNumber');
+                        const attribute = data.UserAttributes.find((a) => a.Name === `custom:${BLUELAB_ATTRIBUTE_NAME}`);
                         resolve((attribute !== undefined) ? attribute.Value : undefined);
                     }
                 }
@@ -181,50 +201,43 @@ export async function getBluelabAccountNumber(
     });
 }
 
-export interface IBluelabParams {
-    accessToken: string;
-    paymentAmount: number;
-    paymentMethodID: string;
-    beneficiaryAccountInformation: {
-        branchNumber: string;
-        accountNumber: string;
-        accountName: string;
-    };
-    paymentDetailsList: factory.order.IOrder;
-}
-
 /**
- * Blue Lab連携プロセス
- * @param accessToken アクセストークン
- * @param order 注文内容
+ * bluelab口座番号をCognitoに登録する
  */
-export async function processBlueLab(params: IBluelabParams) {
-    const response = await request.post({
-        url: `${process.env.BLUELAB_API_ENDPOINT}/dev/payment/purchase`,
-        headers: {
-            bluelabToken: params.accessToken,
-            'x-api-key': process.env.BLUELAB_API_KEY
-        },
-        // auth: { bearer: params.accessToken },
-        body: {
-            paymentAmount: params.paymentAmount,
-            paymentMethodID: params.paymentMethodID,
-            beneficiaryAccountInformation: {
-                branchNumber: params.beneficiaryAccountInformation.branchNumber,
-                accountNumber: params.beneficiaryAccountInformation.accountNumber,
-                accountName: params.beneficiaryAccountInformation.accountName
-            },
-            paymentDetailsList: params.paymentDetailsList
-        },
-        json: true,
-        simple: false,
-        resolveWithFullResponse: true
-    }).promise();
+export async function registerBluelabAccountNumber(
+    accessKeyId: string,
+    secretAccessKey: string,
+    userPoolId: string,
+    username: string,
+    accountNumber: string
+) {
+    return new Promise<void>((resolve, reject) => {
+        const cognitoIdentityServiceProvider = new AWS.CognitoIdentityServiceProvider({
+            apiVersion: 'latest',
+            region: 'ap-northeast-1',
+            accessKeyId: accessKeyId,
+            secretAccessKey: secretAccessKey
+        });
 
-    return {
-        statusCode: response.statusCode,
-        body: response.body
-    };
+        cognitoIdentityServiceProvider.adminUpdateUserAttributes(
+            {
+                Username: username,
+                UserPoolId: userPoolId,
+                UserAttributes: [
+                    {
+                        Name: `custom:${BLUELAB_ATTRIBUTE_NAME}`,
+                        Value: accountNumber
+                    }
+                ]
+            },
+            (err) => {
+                if (err instanceof Error) {
+                    reject(err);
+                } else {
+                    resolve();
+                }
+            });
+    });
 }
 
 /**
