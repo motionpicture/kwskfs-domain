@@ -50,9 +50,9 @@ export function payPecorino(transactionId: string) {
         const payActionAttributes = orderPotentialActions.payPecorino;
         if (payActionAttributes !== undefined) {
             // Pecorino承認アクションがあるはず
-            const authorizeAction = <any>transaction.object.authorizeActions
+            const authorizeAction = <factory.action.authorize.pecorino.IAction>transaction.object.authorizeActions
                 .filter((a) => a.actionStatus === factory.actionStatusType.CompletedActionStatus)
-                .find((a) => a.object.typeOf === 'Pecorino');
+                .find((a) => a.object.typeOf === factory.action.authorize.pecorino.ObjectType.Pecorino);
 
             // アクション開始
             const action = await repos.action.start<factory.action.trade.pay.IAction>(payActionAttributes);
@@ -60,15 +60,93 @@ export function payPecorino(transactionId: string) {
             let bluelabProcessPaymentResult: IProcessPaymentResult | null = null;
 
             try {
-                // 支払取引確定
-                const payTransactionService = new pecorinoapi.service.transaction.Pay({
-                    endpoint: authorizeAction.result.pecorinoEndpoint,
-                    auth: repos.pecorinoAuthClient
-                });
+                // 承認アクション結果は基本的に必ずあるはず
+                if (authorizeAction.result === undefined) {
+                    throw new factory.errors.NotFound('authorizeAction.result');
+                }
 
-                await payTransactionService.confirm({
-                    transactionId: authorizeAction.result.pecorinoTransaction.id
-                });
+                const pecorinoTransaction = authorizeAction.result.pecorinoTransaction;
+                switch (pecorinoTransaction.typeOf) {
+                    case pecorinoapi.factory.transactionType.Pay:
+
+                        // 支払取引の場合、確定
+                        const payTransactionService = new pecorinoapi.service.transaction.Pay({
+                            endpoint: authorizeAction.result.pecorinoEndpoint,
+                            auth: repos.pecorinoAuthClient
+                        });
+                        await payTransactionService.confirm({
+                            transactionId: pecorinoTransaction.id
+                        });
+                        break;
+
+                    case pecorinoapi.factory.transactionType.Transfer:
+                        // 転送取引の場合確定
+                        const transferTransactionService = new pecorinoapi.service.transaction.Transfer({
+                            endpoint: authorizeAction.result.pecorinoEndpoint,
+                            auth: repos.pecorinoAuthClient
+                        });
+                        await transferTransactionService.confirm({
+                            transactionId: pecorinoTransaction.id
+                        });
+
+                        if (transaction.object.clientUser.username !== undefined) {
+                            const username = transaction.object.clientUser.username;
+                            const seller = await repos.organization.findById(transaction.seller.id);
+                            const bluelabPaymentMethod = <IBluelabPaymentMethod>seller.paymentAccepted.find(
+                                (p) => p.paymentMethodType === factory.paymentMethodType.Bluelab
+                            );
+
+                            // bluelab決済方法が組織に登録されていればそのbluelab連携
+                            if (bluelabPaymentMethod !== undefined) {
+                                const bluelab = new BluelabService({
+                                    endpoint: <string>process.env.BLUELAB_API_ENDPOINT,
+                                    apiKey: <string>process.env.BLUELAB_API_KEY
+                                });
+
+                                // bluelab口座番号を取得
+                                let accountNumber = await getBluelabAccountNumber(
+                                    <string>process.env.AWS_ACCESS_KEY_ID,
+                                    <string>process.env.AWS_SECRET_ACCESS_KEY,
+                                    <string>process.env.COGNITO_USER_POOL_ID,
+                                    username
+                                );
+
+                                // 口座未開設であれば開設する
+                                if (accountNumber === undefined) {
+                                    const openAccountResult = await bluelab.openAccount({ accessToken: username });
+                                    if (openAccountResult.statusCode === OK) {
+                                        accountNumber = openAccountResult.body.registInfo.paymentMethodId;
+
+                                        // Cognitoに登録
+                                        await registerBluelabAccountNumber(
+                                            <string>process.env.AWS_ACCESS_KEY_ID,
+                                            <string>process.env.AWS_SECRET_ACCESS_KEY,
+                                            <string>process.env.COGNITO_USER_POOL_ID,
+                                            username,
+                                            accountNumber
+                                        );
+                                    }
+                                }
+
+                                if (accountNumber !== undefined) {
+                                    bluelabProcessPaymentParams = {
+                                        accessToken: username,
+                                        paymentAmount: transactionResult.order.price,
+                                        paymentMethodID: accountNumber,
+                                        beneficiaryAccountInformation: bluelabPaymentMethod,
+                                        paymentDetailsList: transactionResult.order
+                                    };
+                                    bluelabProcessPaymentResult = await bluelab.processPayment(bluelabProcessPaymentParams);
+                                }
+                            }
+                        }
+                        break;
+
+                    default:
+                        throw new factory.errors.NotImplemented(
+                            `transaction type '${(<any>pecorinoTransaction).typeOf}' not implemented.`
+                        );
+                }
 
                 // Pecorino決済の場合キャッシュバック
                 // const CACHBACK = 100;
@@ -91,58 +169,6 @@ export function payPecorino(transactionId: string) {
                 //     notes: 'kwskfs incentive'
                 // });
                 // await depositTransactionService.confirm({ transactionId: depositTransaction.id });
-
-                if (transaction.object.clientUser.username !== undefined) {
-                    const username = transaction.object.clientUser.username;
-                    const seller = await repos.organization.findById(transaction.seller.id);
-                    const bluelabPaymentMethod = <IBluelabPaymentMethod>seller.paymentAccepted.find(
-                        (p) => p.paymentMethodType === factory.paymentMethodType.Bluelab
-                    );
-
-                    // bluelab決済方法が組織に登録されていればそのbluelab連携
-                    if (bluelabPaymentMethod !== undefined) {
-                        const bluelab = new BluelabService({
-                            endpoint: <string>process.env.BLUELAB_API_ENDPOINT,
-                            apiKey: <string>process.env.BLUELAB_API_KEY
-                        });
-
-                        // bluelab口座番号を取得
-                        let accountNumber = await getBluelabAccountNumber(
-                            <string>process.env.AWS_ACCESS_KEY_ID,
-                            <string>process.env.AWS_SECRET_ACCESS_KEY,
-                            <string>process.env.COGNITO_USER_POOL_ID,
-                            username
-                        );
-
-                        // 口座未開設であれば開設する
-                        if (accountNumber === undefined) {
-                            const openAccountResult = await bluelab.openAccount({ accessToken: username });
-                            if (openAccountResult.statusCode === OK) {
-                                accountNumber = openAccountResult.body.registInfo.paymentMethodId;
-
-                                // Cognitoに登録
-                                await registerBluelabAccountNumber(
-                                    <string>process.env.AWS_ACCESS_KEY_ID,
-                                    <string>process.env.AWS_SECRET_ACCESS_KEY,
-                                    <string>process.env.COGNITO_USER_POOL_ID,
-                                    username,
-                                    accountNumber
-                                );
-                            }
-                        }
-
-                        if (accountNumber !== undefined) {
-                            bluelabProcessPaymentParams = {
-                                accessToken: username,
-                                paymentAmount: transactionResult.order.price,
-                                paymentMethodID: accountNumber,
-                                beneficiaryAccountInformation: bluelabPaymentMethod,
-                                paymentDetailsList: transactionResult.order
-                            };
-                            bluelabProcessPaymentResult = await bluelab.processPayment(bluelabProcessPaymentParams);
-                        }
-                    }
-                }
             } catch (error) {
                 // actionにエラー結果を追加
                 try {

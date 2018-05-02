@@ -1,6 +1,5 @@
 /**
  * Pecorino承認アクションサービス
- * @namespace service.transaction.placeOrderInProgress.action.authorize.pecorino
  */
 
 import * as factory from '@motionpicture/kwskfs-factory';
@@ -10,21 +9,31 @@ import { BAD_REQUEST, INTERNAL_SERVER_ERROR } from 'http-status';
 import * as moment from 'moment';
 
 import { MongoRepository as ActionRepo } from '../../../../../repo/action';
+import { MongoRepository as OrganizationRepo } from '../../../../../repo/organization';
 import { MongoRepository as TransactionRepo } from '../../../../../repo/transaction';
 
 const debug = createDebug('kwskfs-domain:service:transaction:placeOrderInProgress:action:authorize:pecorino');
 
 export type ICreateOperation<T> = (repos: {
     action: ActionRepo;
+    organization: OrganizationRepo;
     transaction: TransactionRepo;
-    payTransactionService: pecorinoapi.service.transaction.Pay;
+    payTransactionService?: pecorinoapi.service.transaction.Pay;
+    transferTransactionService?: pecorinoapi.service.transaction.Transfer;
 }) => Promise<T>;
 
 /**
  * Pecorino残高差し押さえ
+ * 口座取引は、支払取引あるいは転送取引のどちらかを選択できます。
  */
 export function create(params: {
+    /**
+     * 取引ID
+     */
     transactionId: string;
+    /**
+     * 金額
+     */
     price: number;
     /**
      * Pecorino口座ID
@@ -38,8 +47,16 @@ export function create(params: {
     // tslint:disable-next-line:max-func-body-length
     return async (repos: {
         action: ActionRepo;
+        organization: OrganizationRepo;
         transaction: TransactionRepo;
-        payTransactionService: pecorinoapi.service.transaction.Pay;
+        /**
+         * 支払取引サービス
+         */
+        payTransactionService?: pecorinoapi.service.transaction.Pay;
+        /**
+         * 転送取引サービス
+         */
+        transferTransactionService?: pecorinoapi.service.transaction.Transfer;
     }) => {
         const transaction = await repos.transaction.findPlaceOrderInProgressById(params.transactionId);
 
@@ -63,24 +80,64 @@ export function create(params: {
         });
         const action = await repos.action.start<factory.action.authorize.pecorino.IAction>(actionAttributes);
 
+        let pecorinoEndpoint: string;
+
         // Pecorinoオーソリ取得
-        let pecorinoTransaction: any;
+        type IPecorinoTransaction = pecorinoapi.factory.transaction.pay.ITransaction |
+            pecorinoapi.factory.transaction.transfer.ITransaction;
+        let pecorinoTransaction: IPecorinoTransaction;
+
         try {
-            debug('starting pecorino pay transaction...', params.price);
-            pecorinoTransaction = await repos.payTransactionService.start({
-                // tslint:disable-next-line:no-magic-numbers
-                expires: moment().add(60, 'minutes').toDate(),
-                recipient: {
-                    typeOf: 'Person',
-                    id: transaction.seller.id,
-                    name: transaction.seller.name,
-                    url: transaction.seller.url
-                },
-                price: params.price,
-                notes: (params.notes !== undefined) ? params.notes : '川崎屋台村 支払取引',
-                fromAccountId: params.fromAccountId
-            });
-            debug('pecorinoTransaction started.', pecorinoTransaction.id);
+            if (repos.payTransactionService !== undefined) {
+                pecorinoEndpoint = repos.payTransactionService.options.endpoint;
+
+                debug('starting pecorino pay transaction...', params.price);
+                pecorinoTransaction = await repos.payTransactionService.start({
+                    // tslint:disable-next-line:no-magic-numbers
+                    expires: moment().add(60, 'minutes').toDate(),
+                    recipient: {
+                        typeOf: 'Person',
+                        id: transaction.seller.id,
+                        name: transaction.seller.name,
+                        url: transaction.seller.url
+                    },
+                    price: params.price,
+                    notes: (params.notes !== undefined) ? params.notes : '川崎屋台村 支払取引',
+                    fromAccountId: params.fromAccountId
+                });
+                debug('pecorinoTransaction started.', pecorinoTransaction.id);
+            } else if (repos.transferTransactionService !== undefined) {
+                pecorinoEndpoint = repos.transferTransactionService.options.endpoint;
+
+                // 組織から転送先口座IDを取得する
+                const seller = await repos.organization.findById(transaction.seller.id);
+                const pecorinoPaymentAccepted = <factory.organization.IPaymentAccepted<factory.paymentMethodType.Pecorino>>
+                    seller.paymentAccepted.find(
+                        (a) => a.paymentMethodType === factory.paymentMethodType.Pecorino
+                    );
+                if (pecorinoPaymentAccepted === undefined) {
+                    throw new factory.errors.Argument('repos', 'Pecorino transfer payment not accepted.');
+                }
+
+                debug('starting pecorino pay transaction...', params.price);
+                pecorinoTransaction = await repos.transferTransactionService.start({
+                    // tslint:disable-next-line:no-magic-numbers
+                    expires: moment().add(60, 'minutes').toDate(),
+                    recipient: {
+                        typeOf: 'Person',
+                        id: transaction.seller.id,
+                        name: transaction.seller.name,
+                        url: transaction.seller.url
+                    },
+                    price: params.price,
+                    notes: (params.notes !== undefined) ? params.notes : '川崎屋台村 支払取引',
+                    fromAccountId: params.fromAccountId,
+                    toAccountId: pecorinoPaymentAccepted.accountId
+                });
+                debug('pecorinoTransaction started.', pecorinoTransaction.id);
+            } else {
+                throw new factory.errors.Argument('resos', 'payTransactionService or transferTransactionService required.');
+            }
         } catch (error) {
             // actionにエラー結果を追加
             try {
@@ -107,7 +164,7 @@ export function create(params: {
         const actionResult: factory.action.authorize.pecorino.IResult = {
             price: params.price,
             pecorinoTransaction: pecorinoTransaction,
-            pecorinoEndpoint: repos.payTransactionService.options.endpoint
+            pecorinoEndpoint: pecorinoEndpoint
         };
 
         return repos.action.complete<factory.action.authorize.pecorino.IAction>(action.typeOf, action.id, actionResult);
