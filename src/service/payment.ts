@@ -193,6 +193,62 @@ export function payPecorino(transactionId: string) {
     };
 }
 
+/**
+ * Pecorinoオーソリ取消
+ * @param transactionId 取引ID
+ */
+// tslint:disable-next-line:max-func-body-length
+export function cancelPecorinoAuth(transactionId: string) {
+    return async (repos: {
+        action: ActionRepo;
+        pecorinoAuthClient: pecorinoapi.auth.ClientCredentials;
+    }) => {
+        // Pecorino承認アクションを取得
+        const authorizeActions: factory.action.authorize.pecorino.IAction[] =
+            await repos.action.findAuthorizeByTransactionId(transactionId)
+                .then((actions) => actions
+                    .filter((a) => a.object.typeOf === factory.action.authorize.pecorino.ObjectType.Pecorino)
+                    .filter((a) => a.actionStatus === factory.actionStatusType.CompletedActionStatus)
+                );
+
+        await Promise.all(authorizeActions.map(async (action) => {
+            // 承認アクション結果は基本的に必ずあるはず
+            if (action.result === undefined) {
+                throw new factory.errors.NotFound('action.result');
+            }
+
+            switch (action.result.pecorinoTransaction.typeOf) {
+                case pecorinoapi.factory.transactionType.Pay:
+                    // 支払取引の場合、中止
+                    const payTransactionService = new pecorinoapi.service.transaction.Pay({
+                        endpoint: action.result.pecorinoEndpoint,
+                        auth: repos.pecorinoAuthClient
+                    });
+                    await payTransactionService.cancel({
+                        transactionId: action.result.pecorinoTransaction.id
+                    });
+                    break;
+
+                case pecorinoapi.factory.transactionType.Transfer:
+                    // 転送取引の場合、中止
+                    const transferTransactionService = new pecorinoapi.service.transaction.Transfer({
+                        endpoint: action.result.pecorinoEndpoint,
+                        auth: repos.pecorinoAuthClient
+                    });
+                    await transferTransactionService.cancel({
+                        transactionId: action.result.pecorinoTransaction.id
+                    });
+                    break;
+
+                default:
+                    throw new factory.errors.NotImplemented(
+                        `transaction type '${(<any>action.result.pecorinoTransaction).typeOf}' not implemented.`
+                    );
+            }
+        }));
+    };
+}
+
 export async function getBluelabAccountNumber(
     accessKeyId: string,
     secretAccessKey: string,
@@ -268,7 +324,6 @@ export async function registerBluelabAccountNumber(
 
 /**
  * クレジットカードオーソリ取消
- * @export
  * @param transactionId 取引ID
  */
 export function cancelCreditCardAuth(transactionId: string) {

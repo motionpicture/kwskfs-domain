@@ -1,9 +1,6 @@
 /**
- * placeOrder transaction service
  * 注文取引サービス
- * @namespace service.transaction.placeOrder
  */
-
 import * as factory from '@motionpicture/kwskfs-factory';
 import * as createDebug from 'debug';
 import * as json2csv from 'json2csv';
@@ -26,11 +23,6 @@ export function exportTasks(status: factory.transactionStatusType) {
         task: TaskRepo;
         transaction: TransactionRepo;
     }) => {
-        const statusesTasksExportable = [factory.transactionStatusType.Expired, factory.transactionStatusType.Confirmed];
-        if (statusesTasksExportable.indexOf(status) < 0) {
-            throw new factory.errors.Argument('status', `transaction status should be in [${statusesTasksExportable.join(',')}]`);
-        }
-
         const transaction = await repos.transaction.startExportTasks(factory.transactionType.PlaceOrder, status);
         if (transaction === null) {
             return;
@@ -72,6 +64,7 @@ export function exportTasksById(transactionId: string): ITaskAndTransactionOpera
                 break;
 
             // 期限切れの場合は、タスクリストを作成する
+            case factory.transactionStatusType.Canceled:
             case factory.transactionStatusType.Expired:
                 taskAttributes.push(factory.task.cancelSeatReservation.createAttributes({
                     status: factory.taskStatus.Ready,
@@ -95,6 +88,17 @@ export function exportTasksById(transactionId: string): ITaskAndTransactionOpera
                         transactionId: transaction.id
                     }
                 }));
+                taskAttributes.push(factory.task.cancelPecorino.createAttributes({
+                    status: factory.taskStatus.Ready,
+                    runsAt: new Date(), // なるはやで実行
+                    remainingNumberOfTries: 10,
+                    lastTriedAt: null,
+                    numberOfTried: 0,
+                    executionResults: [],
+                    data: {
+                        transactionId: transaction.id
+                    }
+                }));
 
                 break;
 
@@ -103,9 +107,7 @@ export function exportTasksById(transactionId: string): ITaskAndTransactionOpera
         }
         debug('taskAttributes prepared', taskAttributes);
 
-        return Promise.all(taskAttributes.map(async (taskAttribute) => {
-            return repos.task.save(taskAttribute);
-        }));
+        return Promise.all(taskAttributes.map(async (a) => repos.task.save(a)));
     };
 }
 

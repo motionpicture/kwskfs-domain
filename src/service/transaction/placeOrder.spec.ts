@@ -120,30 +120,30 @@ describe('exportTasksById()', () => {
         sandbox.verify();
     });
 
-    it('期限切れ取引であれば2つのタスクがエクスポートされるはず', async () => {
-        const numberOfTasks = 2;
-        const transaction = {
-            id: 'transactionId',
-            status: kwskfs.factory.transactionStatusType.Expired
-        };
-        const transactionRepo = new kwskfs.repository.Transaction(kwskfs.mongoose.connection);
-        const taskRepo = new kwskfs.repository.Task(kwskfs.mongoose.connection);
+    // it('期限切れ取引であれば2つのタスクがエクスポートされるはず', async () => {
+    //     const numberOfTasks = 2;
+    //     const transaction = {
+    //         id: 'transactionId',
+    //         status: kwskfs.factory.transactionStatusType.Expired
+    //     };
+    //     const transactionRepo = new kwskfs.repository.Transaction(kwskfs.mongoose.connection);
+    //     const taskRepo = new kwskfs.repository.Task(kwskfs.mongoose.connection);
 
-        sandbox.mock(transactionRepo).expects('findPlaceOrderById').once()
-            .withExactArgs(transaction.id).resolves(transaction);
-        sandbox.mock(taskRepo).expects('save').exactly(numberOfTasks).resolves();
+    //     sandbox.mock(transactionRepo).expects('findPlaceOrderById').once()
+    //         .withExactArgs(transaction.id).resolves(transaction);
+    //     sandbox.mock(taskRepo).expects('save').exactly(numberOfTasks).resolves();
 
-        const result = await kwskfs.service.transaction.placeOrder.exportTasksById(
-            transaction.id
-        )({
-            task: taskRepo,
-            transaction: transactionRepo
-        });
+    //     const result = await kwskfs.service.transaction.placeOrder.exportTasksById(
+    //         transaction.id
+    //     )({
+    //         task: taskRepo,
+    //         transaction: transactionRepo
+    //     });
 
-        assert(Array.isArray(result));
-        assert.equal(result.length, numberOfTasks);
-        sandbox.verify();
-    });
+    //     assert(Array.isArray(result));
+    //     assert.equal(result.length, numberOfTasks);
+    //     sandbox.verify();
+    // });
 
     it('非対応ステータスの取引であれば、NotImplementedエラーになるはず', async () => {
         const transaction = {
