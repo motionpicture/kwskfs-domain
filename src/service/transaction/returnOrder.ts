@@ -75,7 +75,7 @@ export function start(params: {
         const now = new Date();
 
         // 返品対象の取引取得
-        const placeOrderTransaction = await repos.transaction.findPlaceOrderById(params.transactionId);
+        const placeOrderTransaction = await repos.transaction.findById(factory.transactionType.PlaceOrder, params.transactionId);
         if (placeOrderTransaction.status !== factory.transactionStatusType.Confirmed) {
             throw new factory.errors.Argument('transactionId', 'Status not Confirmed.');
         }
@@ -130,7 +130,7 @@ export function start(params: {
 
         let returnOrderTransaction: factory.transaction.returnOrder.ITransaction;
         try {
-            returnOrderTransaction = await repos.transaction.start<factory.transaction.returnOrder.ITransaction>(returnOrderAttributes);
+            returnOrderTransaction = await repos.transaction.start(factory.transactionType.ReturnOrder, returnOrderAttributes);
         } catch (error) {
             if (error.name === 'MongoError') {
                 // 同一取引に対して返品取引を作成しようとすると、MongoDBでE11000 duplicate key errorが発生する
@@ -165,7 +165,7 @@ export function confirm(
         transaction: TransactionRepo;
         organization: OrganizationRepo;
     }) => {
-        const transaction = await repos.transaction.findReturnOrderInProgressById(transactionId);
+        const transaction = await repos.transaction.findInProgressById(factory.transactionType.ReturnOrder, transactionId);
         if (transaction.agent.id !== agentId) {
             throw new factory.errors.Forbidden('A specified transaction is not yours.');
         }
@@ -351,7 +351,7 @@ export function exportTasksById(transactionId: string): ITaskAndTransactionOpera
         task: TaskRepo;
         transaction: TransactionRepo;
     }) => {
-        const transaction = await repos.transaction.findReturnOrderById(transactionId);
+        const transaction = await repos.transaction.findById(factory.transactionType.ReturnOrder, transactionId);
 
         const taskAttributes: factory.task.IAttributes[] = [];
         switch (transaction.status) {

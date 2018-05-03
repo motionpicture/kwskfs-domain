@@ -39,7 +39,7 @@ export function create(params: {
         action: ActionRepo;
         transaction: TransactionRepo;
     }) => {
-        const transaction = await repos.transaction.findPlaceOrderInProgressById(params.transactionId);
+        const transaction = await repos.transaction.findInProgressById(factory.transactionType.PlaceOrder, params.transactionId);
 
         if (transaction.agent.id !== params.agentId) {
             throw new factory.errors.Forbidden('A specified transaction is not yours.');
@@ -191,7 +191,7 @@ export function cancel(
         action: ActionRepo;
         transaction: TransactionRepo;
     }) => {
-        const transaction = await repos.transaction.findPlaceOrderInProgressById(transactionId);
+        const transaction = await repos.transaction.findInProgressById(factory.transactionType.PlaceOrder, transactionId);
 
         if (transaction.agent.id !== agentId) {
             throw new factory.errors.Forbidden('A specified transaction is not yours.');

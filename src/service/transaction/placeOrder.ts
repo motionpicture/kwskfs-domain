@@ -44,7 +44,7 @@ export function exportTasksById(transactionId: string): ITaskAndTransactionOpera
         task: TaskRepo;
         transaction: TransactionRepo;
     }) => {
-        const transaction = await repos.transaction.findPlaceOrderById(transactionId);
+        const transaction = await repos.transaction.findById(factory.transactionType.PlaceOrder, transactionId);
 
         const taskAttributes: factory.task.IAttributes[] = [];
         switch (transaction.status) {
@@ -108,73 +108,6 @@ export function exportTasksById(transactionId: string): ITaskAndTransactionOpera
         debug('taskAttributes prepared', taskAttributes);
 
         return Promise.all(taskAttributes.map(async (a) => repos.task.save(a)));
-    };
-}
-
-/**
- * 確定取引についてメールを送信する
- * @deprecated v24.0.0で廃止予定
- * @export
- * @param transactionId 取引ID
- * @param emailMessageAttributes Eメールメッセージ属性
- */
-export function sendEmail(
-    transactionId: string,
-    emailMessageAttributes: factory.creativeWork.message.email.IAttributes
-): ITaskAndTransactionOperation<factory.task.sendEmailMessage.ITask> {
-    return async (repos: {
-        task: TaskRepo;
-        transaction: TransactionRepo;
-    }) => {
-        const transaction = await repos.transaction.findPlaceOrderById(transactionId);
-        if (transaction.status !== factory.transactionStatusType.Confirmed) {
-            throw new factory.errors.Forbidden('Transaction not confirmed.');
-        }
-        const transactionResult = transaction.result;
-        // tslint:disable-next-line:no-single-line-block-comment
-        /* istanbul ignore next */
-        if (transactionResult === undefined) {
-            throw new factory.errors.NotFound('transaction.result');
-        }
-
-        const emailMessage = factory.creativeWork.message.email.create({
-            identifier: `placeOrderTransaction-${transactionId}`,
-            sender: {
-                typeOf: transaction.seller.typeOf,
-                name: emailMessageAttributes.sender.name,
-                email: emailMessageAttributes.sender.email
-            },
-            toRecipient: {
-                typeOf: transaction.agent.typeOf,
-                name: emailMessageAttributes.toRecipient.name,
-                email: emailMessageAttributes.toRecipient.email
-            },
-            about: emailMessageAttributes.about,
-            text: emailMessageAttributes.text
-        });
-        const actionAttributes = factory.action.transfer.send.message.email.createAttributes({
-            actionStatus: factory.actionStatusType.ActiveActionStatus,
-            object: emailMessage,
-            agent: transaction.seller,
-            recipient: transaction.agent,
-            potentialActions: {},
-            purpose: transactionResult.order
-        });
-
-        // その場で送信ではなく、DBにタスクを登録
-        const taskAttributes = factory.task.sendEmailMessage.createAttributes({
-            status: factory.taskStatus.Ready,
-            runsAt: new Date(), // なるはやで実行
-            remainingNumberOfTries: 10,
-            lastTriedAt: null,
-            numberOfTried: 0,
-            executionResults: [],
-            data: {
-                actionAttributes: actionAttributes
-            }
-        });
-
-        return <factory.task.sendEmailMessage.ITask>await repos.task.save(taskAttributes);
     };
 }
 

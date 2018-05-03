@@ -33,7 +33,7 @@ export function payPecorino(transactionId: string) {
         transaction: TransactionRepo;
         pecorinoAuthClient: pecorinoapi.auth.ClientCredentials;
     }) => {
-        const transaction = await repos.transaction.findPlaceOrderById(transactionId);
+        const transaction = await repos.transaction.findById(factory.transactionType.PlaceOrder, transactionId);
         const transactionResult = transaction.result;
         if (transactionResult === undefined) {
             throw new factory.errors.NotFound('transaction.result');
@@ -367,7 +367,7 @@ export function payCreditCard(transactionId: string) {
         action: ActionRepo;
         transaction: TransactionRepo;
     }) => {
-        const transaction = await repos.transaction.findPlaceOrderById(transactionId);
+        const transaction = await repos.transaction.findById(factory.transactionType.PlaceOrder, transactionId);
         const transactionResult = transaction.result;
         if (transactionResult === undefined) {
             throw new factory.errors.NotFound('transaction.result');
@@ -460,7 +460,7 @@ export function refundCreditCard(transactionId: string) {
         transaction: TransactionRepo;
         task: TaskRepo;
     }) => {
-        const transaction = await repos.transaction.findReturnOrderById(transactionId);
+        const transaction = await repos.transaction.findById(factory.transactionType.ReturnOrder, transactionId);
         const potentialActions = transaction.potentialActions;
         const placeOrderTransaction = transaction.object.transaction;
         const placeOrderTransactionResult = placeOrderTransaction.result;

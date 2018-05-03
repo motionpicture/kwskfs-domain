@@ -58,7 +58,7 @@ export function create(params: {
          */
         transferTransactionService?: pecorinoapi.service.transaction.Transfer;
     }) => {
-        const transaction = await repos.transaction.findPlaceOrderInProgressById(params.transactionId);
+        const transaction = await repos.transaction.findInProgressById(factory.transactionType.PlaceOrder, params.transactionId);
 
         // 他者口座による決済も可能にするためにコメントアウト
         // 基本的に、自分の口座のオーソリを他者に与えても得しないので、
