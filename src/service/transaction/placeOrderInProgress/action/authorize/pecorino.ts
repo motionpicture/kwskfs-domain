@@ -93,8 +93,8 @@ export function create(params: {
 
                 debug('starting pecorino pay transaction...', params.price);
                 pecorinoTransaction = await repos.payTransactionService.start({
-                    // tslint:disable-next-line:no-magic-numbers
-                    expires: moment().add(60, 'minutes').toDate(),
+                    // 最大1ヵ月のオーソリ
+                    expires: moment().add(1, 'month').toDate(),
                     recipient: {
                         typeOf: 'Person',
                         id: transaction.seller.id,
@@ -121,8 +121,8 @@ export function create(params: {
 
                 debug('starting pecorino pay transaction...', params.price);
                 pecorinoTransaction = await repos.transferTransactionService.start({
-                    // tslint:disable-next-line:no-magic-numbers
-                    expires: moment().add(60, 'minutes').toDate(),
+                    // 最大1ヵ月のオーソリ
+                    expires: moment().add(1, 'month').toDate(),
                     recipient: {
                         typeOf: 'Person',
                         id: transaction.seller.id,
