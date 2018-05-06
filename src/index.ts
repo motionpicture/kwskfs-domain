@@ -26,6 +26,7 @@ import * as PlaceOrderInProgressTransactionService from './service/transaction/p
 import * as ReturnOrderTransactionService from './service/transaction/returnOrder';
 import * as UtilService from './service/util';
 
+import { PecorinoRepository as AccountRepo } from './repo/account';
 import { MongoRepository as ActionRepo } from './repo/action';
 import { MongoRepository as PrintActionRepo } from './repo/action/print';
 import { MongoRepository as ClientRepo } from './repo/client';
@@ -82,6 +83,7 @@ export import GMO = GMO;
 export import pecorinoapi = pecorinoapi;
 
 export namespace repository {
+    export class Account extends AccountRepo { }
     export class Action extends ActionRepo { }
     export namespace action {
         export class Print extends PrintActionRepo { }

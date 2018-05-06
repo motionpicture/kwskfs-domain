@@ -154,6 +154,11 @@ schema.index(
     }
 );
 
+// 取引調査や、アクション集計などで、アクションを検索することはとても多いので、そのためのインデックス
+schema.index(
+    { typeOf: 1, 'object.typeOf': 1, startDate: 1 }
+);
+
 export default mongoose.model('Action', schema).on(
     'index',
     // tslint:disable-next-line:no-single-line-block-comment
