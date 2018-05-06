@@ -9,11 +9,10 @@ import * as moment from 'moment-timezone';
 import * as pug from 'pug';
 import * as util from 'util';
 import * as uuid from 'uuid';
-// tslint:disable-next-line:no-require-imports no-var-requires
-const orderId = require('order-id')('mysecret');
 
 import { MongoRepository as ActionRepo } from '../../repo/action';
-import { RedisRepository as ConfirmationNumber } from '../../repo/confirmationNumber';
+import { RedisRepository as ConfirmationNumberRepo } from '../../repo/confirmationNumber';
+import { RedisRepository as OrderNumberRepo } from '../../repo/orderNumber';
 import { MongoRepository as OrganizationRepo } from '../../repo/organization';
 import { MongoRepository as TransactionRepo } from '../../repo/transaction';
 
@@ -248,7 +247,8 @@ export function confirm(
         action: ActionRepo;
         transaction: TransactionRepo;
         organization: OrganizationRepo;
-        confirmationNumber: ConfirmationNumber;
+        confirmationNumber: ConfirmationNumberRepo;
+        orderNumber: OrderNumberRepo;
     }) => {
         const now = moment().toDate();
         const transaction = await repos.transaction.findInProgressById(factory.transactionType.PlaceOrder, transactionId);
@@ -280,7 +280,10 @@ export function confirm(
             orderDate: now,
             orderStatus: factory.orderStatus.OrderProcessing,
             isGift: false
-        })({ confirmationNumber: repos.confirmationNumber });
+        })({
+            confirmationNumber: repos.confirmationNumber,
+            orderNumber: repos.orderNumber
+        });
 
         // tslint:disable-next-line:max-line-length
         type IOwnershipInfo = factory.ownershipInfo.IOwnershipInfo<factory.reservationType>;
@@ -438,7 +441,8 @@ export function createOrderFromTransaction(params: {
 }) {
     // tslint:disable-next-line:max-func-body-length
     return async (repos: {
-        confirmationNumber: ConfirmationNumber;
+        confirmationNumber: ConfirmationNumberRepo;
+        orderNumber: OrderNumberRepo;
     }): Promise<factory.order.IOrder> => {
         // 実験的にメニューアイテムの注文の場合
         // tslint:disable-next-line:no-single-line-block-comment
@@ -556,8 +560,7 @@ export function createOrderFromTransaction(params: {
             };
         });
 
-        // 注文番号生成(とりあえず今回は適当にライブラリ使用)
-        const orderNumber = orderId.generate();
+        const orderNumber = await repos.orderNumber.publish();
 
         type ActionResult = factory.action.authorize.offer.eventReservation.seat.IResult;
         const price = seatReservationAuthorizeActions.reduce((a, b) => a + (<ActionResult>b.result).price, 0);
@@ -597,7 +600,8 @@ export function createMenuItemOrderFromTransaction(params: {
 }) {
     // tslint:disable-next-line:max-func-body-length
     return async (repos: {
-        confirmationNumber: ConfirmationNumber;
+        confirmationNumber: ConfirmationNumberRepo;
+        orderNumber: OrderNumberRepo;
     }): Promise<factory.order.IOrder> => {
         // 実験的にメニューアイテムの注文の場合
         // tslint:disable-next-line:no-single-line-block-comment
@@ -707,8 +711,7 @@ export function createMenuItemOrderFromTransaction(params: {
             };
         });
 
-        // 注文番号生成(とりあえず今回は適当にライブラリ使用)
-        const orderNumber = orderId.generate();
+        const orderNumber = await repos.orderNumber.publish();
 
         return {
             typeOf: 'Order',
