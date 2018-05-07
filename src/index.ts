@@ -34,6 +34,7 @@ import { RedisRepository as ConfirmationNumberRepo } from './repo/confirmationNu
 import { MongoRepository as CreativeWorkRepo } from './repo/creativeWork';
 import { MongoRepository as EventRepo } from './repo/event';
 import { MongoRepository as GMONotificationRepo } from './repo/gmoNotification';
+import { RedisRepository as OfferItemAvailabilityRepo } from './repo/itemAvailability/offer';
 import { MongoRepository as OrderRepo } from './repo/order';
 import { RedisRepository as OrderNumberRepo } from './repo/orderNumber';
 import { MongoRepository as OrganizationRepo } from './repo/organization';
@@ -94,6 +95,9 @@ export namespace repository {
     export class ConfirmationNumber extends ConfirmationNumberRepo { }
     export class Event extends EventRepo { }
     export class GMONotification extends GMONotificationRepo { }
+    export namespace itemAvailability {
+        export class Offer extends OfferItemAvailabilityRepo { }
+    }
     export class Order extends OrderRepo { }
     export class OrderNumber extends OrderNumberRepo { }
     export class Organization extends OrganizationRepo { }

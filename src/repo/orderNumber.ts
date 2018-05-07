@@ -5,7 +5,7 @@ import * as redis from 'redis';
 // tslint:disable-next-line:no-require-imports no-var-requires
 const orderId = require('order-id')('mysecret');
 
-const debug = createDebug('kwskfs-domain:repository:confirmationNumber');
+const debug = createDebug('kwskfs-domain:repository:orderNumber');
 
 /**
  * 注文番号Redisリポジトリー
