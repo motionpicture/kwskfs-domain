@@ -37,7 +37,7 @@ async function main() {
         await Promise.all(menuItems.map(async (menuItem) => {
             const availabilities = menuItem.offers.reduce(
                 (a, b) => {
-                    a[b.identifier] = 'InStock';
+                    a[b.identifier] = kwskfs.factory.itemAvailability.InStock;
 
                     return a;
                 },

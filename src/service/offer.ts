@@ -66,7 +66,7 @@ export function searchEventOffers<T extends factory.eventType>(params: {
                                         menuItem.offers.forEach((offer) => {
                                             (<any>offer).availability = (availabilities[offer.identifier] !== undefined) ?
                                                 availabilities[offer.identifier] :
-                                                'InStock';
+                                                factory.itemAvailability.InStock;
                                         });
                                     }
                                 }));
