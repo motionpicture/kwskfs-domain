@@ -143,13 +143,25 @@ schema.index(
     }
 );
 
-// GMOオーダーIDから支払アクションを検索する際に使用
+// 決済IDに相当するものから支払アクションを検索する際に使用
 schema.index(
     { 'object.paymentMethod.paymentMethodId': 1 },
     {
         partialFilterExpression: {
             typeOf: factory.actionType.PayAction,
             'object.paymentMethod.paymentMethodId': { $exists: true }
+        }
+    }
+);
+
+// Pecorino取引IDから承認アクションを検索する際に使用
+schema.index(
+    { 'result.pecorinoTransaction.id': 1 },
+    {
+        name: 'searchAuthorizeActionByPecorinoTransactionId',
+        partialFilterExpression: {
+            typeOf: factory.actionType.AuthorizeAction,
+            'result.pecorinoTransaction.id': { $exists: true }
         }
     }
 );
