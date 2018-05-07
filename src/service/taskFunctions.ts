@@ -120,6 +120,24 @@ export function payPecorino(
     };
 }
 
+export function payBluelab(
+    data: factory.task.payPecorino.IData
+): IOperation<void> {
+    return async (settings: {
+        connection: mongoose.Connection;
+        pecorinoAuthClient?: pecorinoapi.auth.ClientCredentials;
+    }) => {
+        const actionRepo = new ActionRepo(settings.connection);
+        const organizationRepo = new OrganizationRepo(settings.connection);
+        const transactionRepo = new TransactionRepo(settings.connection);
+        await PaymentService.payBluelab(data.transactionId)({
+            action: actionRepo,
+            organization: organizationRepo,
+            transaction: transactionRepo
+        });
+    };
+}
+
 export function placeOrder(
     data: factory.task.placeOrder.IData
 ): IOperation<void> {

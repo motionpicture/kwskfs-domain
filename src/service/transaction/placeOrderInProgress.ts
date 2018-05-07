@@ -326,13 +326,28 @@ export function confirm(
             });
         }
 
-        // クレジットカード支払いアクション
+        // Pecorino支払いアクション
         let payPecorinoAction: factory.action.trade.pay.IAttributes | null = null;
+        let payBluelabAction: factory.action.trade.pay.IAttributes | null = null;
         const pecorinoPayment = order.paymentMethods.find((m) => m.paymentMethod === factory.paymentMethodType.Pecorino);
         if (pecorinoPayment !== undefined) {
             payPecorinoAction = factory.action.trade.pay.createAttributes({
                 object: {
                     paymentMethod: pecorinoPayment,
+                    price: order.price,
+                    priceCurrency: order.priceCurrency
+                },
+                agent: transaction.agent,
+                purpose: order
+            });
+            payBluelabAction = factory.action.trade.pay.createAttributes({
+                object: {
+                    paymentMethod: {
+                        paymentMethod: factory.paymentMethodType.Bluelab,
+                        // Bluelab決済に関しては、この時点で決済を特定する情報は一切ないので、Pecorino取引IDで代用
+                        paymentMethodId: pecorinoPayment.paymentMethodId,
+                        name: factory.paymentMethodType.Bluelab
+                    },
                     price: order.price,
                     priceCurrency: order.priceCurrency
                 },
@@ -369,6 +384,8 @@ export function confirm(
                     payCreditCard: (payCreditCardAction !== null) ? payCreditCardAction : undefined,
                     // Pecorino決済があれば支払アクション追加
                     payPecorino: (payPecorinoAction !== null) ? payPecorinoAction : undefined,
+                    // Bluelab決済があればBluelab支払アクション追加
+                    payBluelab: (payBluelabAction !== null) ? payBluelabAction : undefined,
                     sendOrder: factory.action.transfer.send.order.createAttributes({
                         actionStatus: factory.actionStatusType.ActiveActionStatus,
                         object: order,

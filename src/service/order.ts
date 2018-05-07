@@ -129,6 +129,23 @@ function onCreate(transactionId: string, orderActionAttributes: factory.action.t
                     }
                 }));
             }
+
+            // bluelab決済
+            // tslint:disable-next-line:no-single-line-block-comment
+            /* istanbul ignore else */
+            if (orderPotentialActions.payBluelab !== undefined) {
+                taskAttributes.push(factory.task.payBluelab.createAttributes({
+                    status: factory.taskStatus.Ready,
+                    runsAt: now, // なるはやで実行
+                    remainingNumberOfTries: 10,
+                    lastTriedAt: null,
+                    numberOfTried: 0,
+                    executionResults: [],
+                    data: {
+                        transactionId: transactionId
+                    }
+                }));
+            }
         }
 
         // タスク保管
