@@ -113,6 +113,21 @@ export class MongoRepository {
             });
         }
 
+        // 注文日時の範囲条件
+        if (searchConditions.orderDateFrom !== undefined || searchConditions.orderDateThrough !== undefined) {
+            const orderDateCondition: any = { $exists: true };
+
+            if (searchConditions.orderDateFrom !== undefined) {
+                orderDateCondition.$gte = searchConditions.orderDateFrom;
+            }
+
+            if (searchConditions.orderDateThrough !== undefined) {
+                orderDateCondition.$lte = searchConditions.orderDateThrough;
+            }
+
+            andConditions.push({ orderDate: orderDateCondition });
+        }
+
         return this.orderModel.find({ $and: andConditions })
             .sort({ orderDate: 1 })
             .exec()

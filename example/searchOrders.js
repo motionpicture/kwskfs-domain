@@ -14,7 +14,9 @@ async function main() {
         sellerId: '5adae69ff36d2843be76a1e5',
         // customerId: '111df186-2458-4b4c-9de7-c71081a94da8',
         // orderNumber: '3940-997286-8877',
-        orderStatus: kwskfs.factory.orderStatus.OrderDelivered
+        orderStatus: kwskfs.factory.orderStatus.OrderDelivered,
+        orderDateFrom: moment().add(-2, 'hours').toDate(),
+        orderDateThrough: moment().add(-1, 'hours').toDate(),
     });
     console.log(orders.length, 'orders found.');
 

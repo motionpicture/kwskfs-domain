@@ -162,7 +162,8 @@ schema.index(
 schema.index(
     {
         orderNumber: 1,
-        orderStatus: 1
+        orderStatus: 1,
+        orderDate: 1
     },
     {
         name: 'searchOrders'
