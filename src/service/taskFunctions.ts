@@ -121,7 +121,7 @@ export function payPecorino(
 }
 
 export function payBluelab(
-    data: factory.task.payPecorino.IData
+    data: factory.task.payBluelab.IData
 ): IOperation<void> {
     return async (settings: {
         connection: mongoose.Connection;

@@ -154,6 +154,17 @@ schema.index(
     }
 );
 
+// 決済方法支払アクションを検索する際に使用
+schema.index(
+    { 'object.paymentMethod.paymentMethod': 1 },
+    {
+        partialFilterExpression: {
+            typeOf: factory.actionType.PayAction,
+            'object.paymentMethod.paymentMethod': { $exists: true }
+        }
+    }
+);
+
 // Pecorino取引IDから承認アクションを検索する際に使用
 schema.index(
     { 'result.pecorinoTransaction.id': 1 },

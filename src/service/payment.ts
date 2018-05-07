@@ -341,8 +341,13 @@ export function payBluelab(transactionId: string) {
             } catch (error) {
                 // actionにエラー結果を追加
                 try {
-                    // tslint:disable-next-line:no-single-line-block-comment
-                    const actionError = (error instanceof Error) ? { ...error, message: error.message } : /* istanbul ignore next */ error;
+                    const actionError = {
+                        ...error,
+                        name: error.name,
+                        message: error.message,
+                        bluelabProcessPaymentParams: bluelabProcessPaymentParams,
+                        bluelabProcessPaymentResult: bluelabProcessPaymentResult
+                    };
                     await repos.action.giveUp(payActionAttributes.typeOf, action.id, actionError);
                 } catch (__) {
                     // 失敗したら仕方ない
