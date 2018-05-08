@@ -85,10 +85,11 @@ export function start(params: {
             throw new factory.errors.NotFound('placeOrderTransaction.result');
         }
 
-        // 注文ステータスが配送済の場合のみ受け付け
+        // 注文ステータスがpickupAvailableあるいはdeliveredの場合のみ受け付け
         const order = await repos.order.findByOrderNumber(placeOrderTransactionResult.order.orderNumber);
-        if (order.orderStatus !== factory.orderStatus.OrderDelivered) {
-            throw new factory.errors.Argument('transaction', 'order status is not OrderDelivered');
+        if (order.orderStatus !== factory.orderStatus.OrderDelivered &&
+            order.orderStatus !== factory.orderStatus.OrderPickupAvailable) {
+            throw new factory.errors.Argument('transaction', 'order status is not OrderDelivered nor OrderPickupAvailable');
         }
 
         const actionsOnOrder = await repos.action.findByOrderNumber(order.orderNumber);

@@ -66,6 +66,15 @@ const potentialActionsSchema = new mongoose.Schema(
     }
 );
 
+const targetCollectionSchema = new mongoose.Schema(
+    {},
+    {
+        id: false,
+        _id: false,
+        strict: false
+    }
+);
+
 /**
  * アクションスキーマ
  * @ignore
@@ -82,7 +91,8 @@ const schema = new mongoose.Schema(
         startDate: Date,
         endDate: Date,
         purpose: purposeSchema,
-        potentialActions: potentialActionsSchema
+        potentialActions: potentialActionsSchema,
+        targetCollection: targetCollectionSchema
     },
     {
         collection: 'actions',

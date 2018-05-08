@@ -1,7 +1,6 @@
 /**
  * 配送サービス
  */
-
 import * as factory from '@motionpicture/kwskfs-factory';
 import * as createDebug from 'debug';
 
@@ -14,6 +13,11 @@ import { MongoRepository as TransactionRepo } from '../repo/transaction';
 const debug = createDebug('kwskfs-domain:service:delivery');
 
 export type IPlaceOrderTransaction = factory.transaction.placeOrder.ITransaction;
+export type IUpdateOrderStatusAction = factory.action.IAction<factory.action.IAttributes<any, any>>;
+export type IUpdateOrderOperation<T> = (repos: {
+    action: ActionRepo;
+    order: OrderRepo;
+}) => Promise<T>;
 
 /**
  * 注文を配送する
@@ -63,7 +67,7 @@ export function sendOrder(transactionId: string) {
             }));
 
             // 注文ステータス変更
-            await repos.order.changeStatus(transactionResult.order.orderNumber, factory.orderStatus.OrderDelivered);
+            await repos.order.changeStatus(transactionResult.order.orderNumber, factory.orderStatus.OrderPickupAvailable);
         } catch (error) {
             // actionにエラー結果を追加
             try {
@@ -133,5 +137,83 @@ function onSend(sendOrderActionAttributes: factory.action.transfer.send.order.IA
         await Promise.all(taskAttributes.map(async (taskAttribute) => {
             return repos.task.save(taskAttribute);
         }));
+    };
+}
+
+/**
+ * 注文番号からステータスを変更する
+ * @param orderNumber 注文番号
+ */
+export function deliverOrder(orderNumber: string): IUpdateOrderOperation<IUpdateOrderStatusAction> {
+    return async (repos: {
+        action: ActionRepo;
+        order: OrderRepo;
+    }) => {
+        const targetOrderStatus: factory.orderStatus = factory.orderStatus.OrderDelivered;
+
+        // アクション開始
+        const actionAttributes = {
+            typeOf: factory.actionType.UpdateAction,
+            agent: {
+                typeOf: factory.personType.Person,
+                id: ''
+            },
+            targetCollection: {
+                typeOf: 'Order',
+                orderNumber: orderNumber,
+                orderStatus: targetOrderStatus
+            },
+            object: {
+                typeOf: 'Order',
+                orderNumber: orderNumber
+            }
+        };
+        const action = await repos.action.start(actionAttributes);
+
+        try {
+            let doc = await repos.order.orderModel.findOneAndUpdate(
+                {
+                    orderNumber: orderNumber,
+                    orderStatus: factory.orderStatus.OrderPickupAvailable
+                },
+                { orderStatus: targetOrderStatus }
+            ).exec();
+
+            if (doc === null) {
+                // なければ、すでにdeliveredかどうかを確認
+                doc = await repos.order.orderModel.findOne(
+                    { orderNumber: orderNumber }
+                ).exec();
+
+                if (doc === null) {
+                    throw new factory.errors.NotFound('order');
+                }
+
+                const order = <factory.order.IOrder>doc.toObject();
+                switch (order.orderStatus) {
+                    // すでにdeliveredであればOK
+                    case targetOrderStatus:
+                        break;
+                    // それ以外のステータスは受け付けない
+                    default:
+                        throw new factory.errors.Argument('orderNumber', 'Order status not OrderPickupAvailable');
+                }
+            }
+        } catch (error) {
+            // actionにエラー結果を追加
+            try {
+                const actionError = { ...error, ...{ message: error.message } };
+                await repos.action.giveUp(actionAttributes.typeOf, action.id, actionError);
+            } catch (__) {
+                // 失敗したら仕方ない
+            }
+
+            throw error;
+        }
+
+        // アクション完了
+        debug('ending action...');
+
+        return repos.action.complete(actionAttributes.typeOf, action.id, {});
     };
 }

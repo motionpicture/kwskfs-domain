@@ -53,7 +53,7 @@ export function createFromTransaction(transactionId: string) {
                 // 失敗したら仕方ない
             }
 
-            throw new Error(error);
+            throw error;
         }
 
         // アクション完了
@@ -209,7 +209,7 @@ export function cancelReservations(returnOrderTransactionId: string) {
                 // 失敗したら仕方ない
             }
 
-            throw new Error(error);
+            throw error;
         }
 
         // アクション完了
