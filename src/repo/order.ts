@@ -76,11 +76,20 @@ export class MongoRepository {
 
     /**
      * 注文を検索する
+     * @param searchConditions 検索条件
      */
     public async search(
         searchConditions: factory.order.ISearchConditions
     ): Promise<factory.order.IOrder[]> {
         const andConditions: any[] = [
+            // 注文日時の範囲条件
+            {
+                orderDate: {
+                    $exists: true,
+                    $gte: searchConditions.orderDateFrom,
+                    $lte: searchConditions.orderDateThrough
+                }
+            }
         ];
 
         if (searchConditions.sellerId !== undefined) {
@@ -111,21 +120,6 @@ export class MongoRepository {
             andConditions.push({
                 orderStatus: searchConditions.orderStatus
             });
-        }
-
-        // 注文日時の範囲条件
-        if (searchConditions.orderDateFrom !== undefined || searchConditions.orderDateThrough !== undefined) {
-            const orderDateCondition: any = { $exists: true };
-
-            if (searchConditions.orderDateFrom !== undefined) {
-                orderDateCondition.$gte = searchConditions.orderDateFrom;
-            }
-
-            if (searchConditions.orderDateThrough !== undefined) {
-                orderDateCondition.$lte = searchConditions.orderDateThrough;
-            }
-
-            andConditions.push({ orderDate: orderDateCondition });
         }
 
         return this.orderModel.find({ $and: andConditions })
