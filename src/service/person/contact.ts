@@ -1,8 +1,6 @@
 /**
  * 会員連絡先サービス
- * @namespace service.person.contact
  */
-
 import * as factory from '@motionpicture/kwskfs-factory';
 import * as AWS from 'aws-sdk';
 import * as createDebug from 'debug';
@@ -11,69 +9,75 @@ import { PhoneNumberFormat, PhoneNumberUtil } from 'google-libphonenumber';
 const debug = createDebug('kwskfs-domain:service:person:contact');
 
 /**
- * retrieve contact from Amazon Cognito
- * @export
+ * Cognitoからユーザープロフィールを取得する
+ * @param accessToken アクセストークン
+ * @see https://docs.aws.amazon.com/cognito/latest/developerguide/limits.html APIにはいくつかの制限があるので考慮すること
  */
 export function retrieve(accessToken: string) {
-    return async () => {
-        return new Promise<factory.person.IContact>((resolve, reject) => {
-            const cognitoIdentityServiceProvider = new AWS.CognitoIdentityServiceProvider({
-                apiVersion: 'latest',
-                region: 'ap-northeast-1'
-            });
+    return async (): Promise<factory.person.IContact> => {
+        let contact: factory.person.IContact;
 
-            cognitoIdentityServiceProvider.getUser(
-                {
-                    AccessToken: accessToken
-                },
-                (err, data) => {
-                    if (err instanceof Error) {
-                        reject(err);
-                    } else {
-                        debug('cognito getUserResponse:', data);
-                        const contact: factory.person.IContact = {
-                            givenName: '',
-                            familyName: '',
-                            email: '',
-                            telephone: ''
-                        };
-
-                        data.UserAttributes.forEach((userAttribute) => {
-                            switch (userAttribute.Name) {
-                                case 'given_name':
-                                    contact.givenName = (userAttribute.Value !== undefined) ? userAttribute.Value : '';
-                                    break;
-                                case 'family_name':
-                                    contact.familyName = (userAttribute.Value !== undefined) ? userAttribute.Value : '';
-                                    break;
-                                case 'email':
-                                    contact.email = (userAttribute.Value !== undefined) ? userAttribute.Value : '';
-                                    break;
-                                case 'phone_number':
-                                    // tslint:disable-next-line:no-single-line-block-comment
-                                    /* istanbul ignore else */
-                                    if (userAttribute.Value !== undefined) {
-                                        // format a phone number to a Japanese style
-                                        const phoneUtil = PhoneNumberUtil.getInstance();
-                                        const phoneNumber = phoneUtil.parse(userAttribute.Value, 'JP');
-                                        contact.telephone = phoneUtil.format(phoneNumber, PhoneNumberFormat.NATIONAL);
-                                    }
-                                    break;
-                                default:
-                            }
-
-                        });
-
-                        resolve(contact);
-                    }
+        try {
+            contact = await new Promise<factory.person.IContact>((resolve, reject) => {
+                const cognitoIdentityServiceProvider = new AWS.CognitoIdentityServiceProvider({
+                    apiVersion: 'latest',
+                    region: 'ap-northeast-1'
                 });
-        });
+
+                cognitoIdentityServiceProvider.getUser(
+                    {
+                        AccessToken: accessToken
+                    },
+                    (err, data) => {
+                        if (err instanceof Error) {
+                            reject(err);
+                        } else {
+                            debug('cognito getUserResponse:', data);
+                            const contactFromAttributes: factory.person.IContact = {
+                                givenName: '',
+                                familyName: '',
+                                email: '',
+                                telephone: ''
+                            };
+
+                            data.UserAttributes.forEach((userAttribute) => {
+                                switch (userAttribute.Name) {
+                                    case 'given_name':
+                                        contactFromAttributes.givenName = (userAttribute.Value !== undefined) ? userAttribute.Value : '';
+                                        break;
+                                    case 'family_name':
+                                        contactFromAttributes.familyName = (userAttribute.Value !== undefined) ? userAttribute.Value : '';
+                                        break;
+                                    case 'email':
+                                        contactFromAttributes.email = (userAttribute.Value !== undefined) ? userAttribute.Value : '';
+                                        break;
+                                    case 'phone_number':
+                                        contactFromAttributes.telephone = (userAttribute.Value !== undefined) ? userAttribute.Value : '';
+                                        break;
+                                    default:
+                                }
+
+                            });
+
+                            resolve(contactFromAttributes);
+                        }
+                    });
+            });
+        } catch (error) {
+            // AmazonCognitoAPIのレート制限をハンドリング
+            if (error.name === 'TooManyRequestsException') {
+                throw new factory.errors.RateLimitExceeded(`getUser ${error.message}`);
+            } else {
+                throw new factory.errors.Argument('accessToken', `${error.name}:${error.message}`);
+            }
+        }
+
+        return contact;
     };
 }
 
 /**
  * 会員プロフィール更新
- * @export
  */
 export function update(
     accessToken: string,
