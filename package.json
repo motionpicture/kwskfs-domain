@@ -22,7 +22,7 @@
     "debug": "^3.1.0",
     "google-libphonenumber": "^3.0.12",
     "http-status": "^1.0.1",
-    "json2csv": "^3.11.5",
+    "json2csv": "^4.1.2",
     "lodash.difference": "^4.5.0",
     "moment": "^2.20.1",
     "moment-timezone": "^0.5.14",
@@ -39,6 +39,7 @@
   "devDependencies": {
     "@types/debug": "0.0.30",
     "@types/http-status": "^0.2.30",
+    "@types/json2csv": "^4.1.0",
     "@types/lodash.difference": "^4.5.3",
     "@types/mocha": "^5.2.0",
     "@types/moment-timezone": "^0.5.4",

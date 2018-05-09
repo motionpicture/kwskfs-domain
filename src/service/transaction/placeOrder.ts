@@ -111,9 +111,10 @@ export function exportTasksById(transactionId: string): ITaskAndTransactionOpera
     };
 }
 
+export type IDownloadFormat = 'csv';
+
 /**
  * フォーマット指定でダウンロード
- * @export
  * @param conditions 検索条件
  * @param format フォーマット
  */
@@ -122,7 +123,7 @@ export function download(
         startFrom: Date;
         startThrough: Date;
     },
-    format: 'csv'
+    format: IDownloadFormat
 ) {
     return async (repos: { transaction: TransactionRepo }): Promise<string> => {
         // 取引検索
@@ -135,37 +136,59 @@ export function download(
 
         if (format === 'csv') {
             return new Promise<string>((resolve) => {
-                const fields = [
-                    'id', 'status', 'startDate', 'endDate',
-                    'customer.name', 'customer.email', 'customer.telephone', 'customer.memberOf.membershipNumber',
-                    'eventName', 'eventStartDate', 'eventEndDate', 'superEventLocationBranchCode', 'superEventLocation', 'eventLocation',
-                    'reservedTickets', 'orderNumber', 'confirmationNumber', 'price',
-                    'paymentMethod.0', 'paymentMethodId.0',
-                    'paymentMethod.1', 'paymentMethodId.1',
-                    'paymentMethod.2', 'paymentMethodId.2',
-                    'paymentMethod.3', 'paymentMethodId.3',
-                    'discounts.0', 'discountCodes.0', 'discountPrices.0',
-                    'discounts.1', 'discountCodes.1', 'discountPrices.1',
-                    'discounts.2', 'discountCodes.2', 'discountPrices.2',
-                    'discounts.3', 'discountCodes.3', 'discountPrices.3'
+                const fields: json2csv.json2csv.FieldInfo<any>[] = [
+                    { label: '取引ID', default: '', value: 'id' },
+                    { label: '取引ステータス', default: '', value: 'status' },
+                    { label: '取引開始日時', default: '', value: 'startDate' },
+                    { label: '取引終了日時', default: '', value: 'endDate' },
+                    { label: '購入者お名前', default: '', value: 'customer.name' },
+                    { label: '購入者メールアドレス', default: '', value: 'customer.email' },
+                    { label: '購入者電話番号', default: '', value: 'customer.telephone' },
+                    { label: '購入者ID', default: '', value: 'customer.memberOf.membershipNumber' },
+                    { label: '販売者タイプ', default: '', value: 'seller.typeOf' },
+                    { label: '販売者ID', default: '', value: 'seller.id' },
+                    { label: '販売者名', default: '', value: 'seller.name' },
+                    { label: '販売者URL', default: '', value: 'seller.url' },
+                    { label: '予約イベント名', default: '', value: 'eventName' },
+                    { label: '予約イベント開始日時', default: '', value: 'eventStartDate' },
+                    { label: '予約イベント終了日時', default: '', value: 'eventEndDate' },
+                    { label: '予約イベント場所枝番号', default: '', value: 'superEventLocationBranchCode' },
+                    { label: '予約イベント場所1', default: '', value: 'superEventLocation' },
+                    { label: '予約イベント場所2', default: '', value: 'eventLocation' },
+                    { label: '予約チケット', default: '', value: 'reservedTickets' },
+                    { label: '注文番号', default: '', value: 'orderNumber' },
+                    { label: '確認番号', default: '', value: 'confirmationNumber' },
+                    { label: '金額', default: '', value: 'price' },
+                    { label: '決済方法1', default: '', value: 'paymentMethod.0' },
+                    { label: '決済ID1', default: '', value: 'paymentMethodId.0' },
+                    { label: '決済方法2', default: '', value: 'paymentMethod.1' },
+                    { label: '決済ID2', default: '', value: 'paymentMethodId.1' },
+                    { label: '決済方法3', default: '', value: 'paymentMethod.2' },
+                    { label: '決済ID3', default: '', value: 'paymentMethodId.2' },
+                    { label: '決済方法4', default: '', value: 'paymentMethod.3' },
+                    { label: '決済ID4', default: '', value: 'paymentMethodId.3' },
+                    { label: '割引1', default: '', value: 'discounts.0' },
+                    { label: '割引コード1', default: '', value: 'discountCodes.0' },
+                    { label: '割引金額1', default: '', value: 'discountPrices.0' },
+                    { label: '割引2', default: '', value: 'discounts.1' },
+                    { label: '割引コード2', default: '', value: 'discountCodes.1' },
+                    { label: '割引金額2', default: '', value: 'discountPrices.1' },
+                    { label: '割引3', default: '', value: 'discounts.2' },
+                    { label: '割引コード3', default: '', value: 'discountCodes.2' },
+                    { label: '割引金額3', default: '', value: 'discountPrices.2' },
+                    { label: '割引4', default: '', value: 'discounts.3' },
+                    { label: '割引コード4', default: '', value: 'discountCodes.3' },
+                    { label: '割引金額4', default: '', value: 'discountPrices.3' }
                 ];
-                const fieldNames = [
-                    '取引ID', '取引ステータス', '開始日時', '終了日時',
-                    'お名前', 'メールアドレス', '電話番号', '会員ID',
-                    'イベント名', 'イベント開始日時', 'イベント終了日時', '劇場コード', '劇場名', 'スクリーン名',
-                    '予約座席チケット', '注文番号', '確認番号', '金額',
-                    '決済方法1', '決済ID1', '決済方法2', '決済ID2', '決済方法3', '決済ID3', '決済方法4', '決済ID4',
-                    '割引1', '割引コード1', '割引金額1', '割引2', '割引コード2', '割引金額2', '割引3', '割引コード3', '割引金額3', '割引4', '割引コード4', '割引金額4'
-                ];
-                const output = json2csv(<any>{
-                    data: data,
+                const json2csvParser = new json2csv.Parser({
                     fields: fields,
-                    fieldNames: fieldNames,
-                    del: ',',
-                    newLine: '\n',
-                    flatten: true,
-                    preserveNewLinesInValues: true
+                    delimiter: ',',
+                    eol: '\n',
+                    // flatten: true,
+                    // preserveNewLinesInValues: true,
+                    unwind: 'reservedTickets'
                 });
+                const output = json2csvParser.parse(data);
                 debug('output:', output);
 
                 resolve(output);
@@ -179,13 +202,18 @@ export function download(
 
 /**
  * 取引レポートインターフェース
- * @export
  */
 export interface ITransactionReport {
     id: string;
     status: string;
     startDate: string;
     endDate: string;
+    seller: {
+        typeOf: string;
+        id: string;
+        name: string;
+        url: string;
+    };
     customer: {
         name: string;
         email: string;
@@ -200,7 +228,7 @@ export interface ITransactionReport {
     superEventLocationBranchCode: string;
     superEventLocation: string;
     eventLocation: string;
-    reservedTickets: string;
+    reservedTickets: string[];
     orderNumber: string;
     confirmationNumber: string;
     price: string;
@@ -211,28 +239,49 @@ export interface ITransactionReport {
     discountPrices: string[];
 }
 
+/**
+ * 注文取引をレポート形式に変換する
+ * @param transaction 注文取引オブジェクト
+ */
 export function transaction2report(transaction: factory.transaction.placeOrder.ITransaction): ITransactionReport {
     if (transaction.result !== undefined) {
         const order = transaction.result.order;
         const orderItems = order.acceptedOffers;
         const event = orderItems[0].itemOffered.reservationFor;
-        const ticketsStr = orderItems.map(
+        const tickets = orderItems.map(
             (orderItem) => {
-                const ticketedSeat = orderItem.itemOffered.reservedTicket.ticketedSeat;
+                const offer = orderItem.itemOffered;
+                const ticket = offer.reservedTicket;
+                const ticketedSeat = ticket.ticketedSeat;
+                const ticketedMenuItem = ticket.ticketedMenuItem;
+                let ticketStr = `${ticket.ticketToken} ￥${ticket.totalPrice}`;
                 if (ticketedSeat !== undefined) {
                     // tslint:disable-next-line:max-line-length
-                    return `${ticketedSeat.seatNumber} ￥${orderItem.itemOffered.reservedTicket.totalPrice}`;
-                } else {
-                    return '';
+                    ticketStr += ` ${ticketedSeat.seatNumber}`;
                 }
+                if (ticketedMenuItem !== undefined) {
+                    // tslint:disable-next-line:max-line-length
+                    ticketStr += ` ${ticketedMenuItem.name}`;
+                }
+                if (offer.numSeats !== undefined) {
+                    // tslint:disable-next-line:max-line-length
+                    ticketStr += ` x${offer.numSeats}`;
+                }
+                if (offer.numMenuItems !== undefined) {
+                    // tslint:disable-next-line:max-line-length
+                    ticketStr += ` x${offer.numMenuItems}`;
+                }
+
+                return ticketStr;
             }
-        ).join('\n');
+        );
 
         return {
             id: transaction.id,
             status: transaction.status,
             startDate: (transaction.startDate !== undefined) ? transaction.startDate.toISOString() : '',
             endDate: (transaction.endDate !== undefined) ? transaction.endDate.toISOString() : '',
+            seller: order.seller,
             customer: order.customer,
             eventName: (event.name !== undefined) ? event.name.ja : '',
             eventStartDate: (event.startDate !== undefined) ? event.startDate.toISOString() : '',
@@ -240,7 +289,7 @@ export function transaction2report(transaction: factory.transaction.placeOrder.I
             superEventLocationBranchCode: '',
             superEventLocation: '',
             eventLocation: (event.location !== undefined && event.location.name !== undefined) ? event.location.name.ja : '',
-            reservedTickets: ticketsStr,
+            reservedTickets: tickets,
             orderNumber: order.orderNumber,
             confirmationNumber: order.confirmationNumber.toString(),
             price: `${order.price} ${order.priceCurrency}`,
@@ -258,6 +307,7 @@ export function transaction2report(transaction: factory.transaction.placeOrder.I
             status: transaction.status,
             startDate: (transaction.startDate !== undefined) ? transaction.startDate.toISOString() : '',
             endDate: (transaction.endDate !== undefined) ? transaction.endDate.toISOString() : '',
+            seller: transaction.seller,
             customer: {
                 name: (customerContact !== undefined) ? `${customerContact.familyName} ${customerContact.givenName}` : '',
                 email: (customerContact !== undefined) ? customerContact.email : '',
@@ -272,7 +322,7 @@ export function transaction2report(transaction: factory.transaction.placeOrder.I
             superEventLocationBranchCode: '',
             superEventLocation: '',
             eventLocation: '',
-            reservedTickets: '',
+            reservedTickets: [],
             orderNumber: '',
             confirmationNumber: '',
             price: '',
