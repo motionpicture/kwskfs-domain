@@ -7,6 +7,7 @@ import * as pecorinoapi from '@motionpicture/pecorino-api-nodejs-client';
 import * as AWS from 'aws-sdk';
 import * as createDebug from 'debug';
 import { OK } from 'http-status';
+import * as moment from 'moment';
 
 import { BluelabService, IProcessPaymentParams, IProcessPaymentResult } from './payment/bluelab';
 
@@ -600,7 +601,9 @@ export function refundCreditCard(transactionId: string) {
 
         await Promise.all(authorizeActions.map(async (authorizeAction) => {
             // アクション開始
-            const refundActionAttributes = returnOrderPotentialActions.refund;
+            const refundActionAttributes = <factory.action.trade.refund.IAttributes>returnOrderPotentialActions.refund.find(
+                (a) => a.object.object.paymentMethod.paymentMethod === factory.paymentMethodType.CreditCard
+            );
             const action = await repos.action.start<factory.action.trade.refund.IAction>(refundActionAttributes);
 
             let alterTranResult: GMO.services.credit.IAlterTranResult;
@@ -651,6 +654,87 @@ export function refundCreditCard(transactionId: string) {
             // アクション完了
             debug('ending action...');
             await repos.action.complete(refundActionAttributes.typeOf, action.id, { alterTranResult });
+
+            // 潜在アクション
+            await onRefund(refundActionAttributes)({ task: repos.task });
+        }));
+    };
+}
+
+/**
+ * 注文返品取引からPecorino返金処理を実行する
+ * @param transactionId 注文返品取引ID
+ */
+export function refundPecorino(transactionId: string) {
+    return async (repos: {
+        action: ActionRepo;
+        transaction: TransactionRepo;
+        task: TaskRepo;
+        pecorinoAuthClient: pecorinoapi.auth.ClientCredentials;
+    }) => {
+        const transaction = await repos.transaction.findById(factory.transactionType.ReturnOrder, transactionId);
+        const potentialActions = transaction.potentialActions;
+        const placeOrderTransaction = transaction.object.transaction;
+        const placeOrderTransactionResult = placeOrderTransaction.result;
+        // 注文取引上のPecorino承認アクションを取り出す
+        const authorizeActions = <factory.action.authorize.pecorino.IAction[]>placeOrderTransaction.object.authorizeActions
+            .filter((action) => action.actionStatus === factory.actionStatusType.CompletedActionStatus)
+            .filter((action) => action.object.typeOf === factory.action.authorize.pecorino.ObjectType.Pecorino);
+
+        if (potentialActions === undefined) {
+            throw new factory.errors.NotFound('transaction.potentialActions');
+        }
+
+        if (placeOrderTransactionResult === undefined) {
+            throw new factory.errors.NotFound('placeOrderTransaction.result');
+        }
+        const returnOrderPotentialActions = potentialActions.returnOrder.potentialActions;
+        if (returnOrderPotentialActions === undefined) {
+            throw new factory.errors.NotFound('returnOrder.potentialActions');
+        }
+
+        await Promise.all(authorizeActions.map(async (authorizeAction) => {
+            // アクション開始
+            const refundActionAttributes = <factory.action.trade.refund.IAttributes>returnOrderPotentialActions.refund.find(
+                (a) => a.object.object.paymentMethod.paymentMethod === factory.paymentMethodType.Pecorino
+            );
+            const action = await repos.action.start<factory.action.trade.refund.IAction>(refundActionAttributes);
+
+            try {
+                const authorizeActionResult = (<factory.action.authorize.pecorino.IResult>authorizeAction.result);
+                const pecorinoTransaction = authorizeActionResult.pecorinoTransaction;
+
+                // Pecorino入金取引で返金実行
+                const depositService = new pecorinoapi.service.transaction.Deposit({
+                    endpoint: authorizeActionResult.pecorinoEndpoint,
+                    auth: repos.pecorinoAuthClient
+                });
+                const depositTransaction = await depositService.start({
+                    toAccountId: pecorinoTransaction.object.fromAccountId,
+                    // tslint:disable-next-line:no-magic-numbers
+                    expires: moment().add(5, 'minutes').toDate(),
+                    agent: pecorinoTransaction.recipient,
+                    recipient: pecorinoTransaction.agent,
+                    price: pecorinoTransaction.object.price,
+                    notes: '川崎屋台村 返金'
+                });
+                await depositService.confirm({ transactionId: depositTransaction.id });
+            } catch (error) {
+                // actionにエラー結果を追加
+                try {
+                    // tslint:disable-next-line:max-line-length no-single-line-block-comment
+                    const actionError = (error instanceof Error) ? { ...error, ...{ message: error.message } } : /* istanbul ignore next */ error;
+                    await repos.action.giveUp(refundActionAttributes.typeOf, action.id, actionError);
+                } catch (__) {
+                    // 失敗したら仕方ない
+                }
+
+                throw new Error(error);
+            }
+
+            // アクション完了
+            debug('ending action...');
+            await repos.action.complete(refundActionAttributes.typeOf, action.id, {});
 
             // 潜在アクション
             await onRefund(refundActionAttributes)({ task: repos.task });

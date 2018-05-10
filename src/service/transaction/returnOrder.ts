@@ -1,11 +1,8 @@
 /**
  * 注文返品サービス
- * @namespace service.transaction.returnOrder
  */
-
-import * as createDebug from 'debug';
-
 import * as factory from '@motionpicture/kwskfs-factory';
+import * as createDebug from 'debug';
 import * as pug from 'pug';
 
 import { MongoRepository as ActionRepo } from '../../repo/action';
@@ -185,14 +182,11 @@ export function confirm(
         const seller = await repos.organization.findById(placeOrderTransaction.seller.id);
 
         const actionsOnOrder = await repos.action.findByOrderNumber(placeOrderTransactionResult.order.orderNumber);
-        const payAction = <factory.action.trade.pay.IAction | undefined>actionsOnOrder.find(
-            (a) => {
-                return a.typeOf === factory.actionType.PayAction &&
-                    a.actionStatus === factory.actionStatusType.CompletedActionStatus;
-            }
-        );
+        const payActions = <factory.action.trade.pay.IAction[]>actionsOnOrder
+            .filter((a) => a.typeOf === factory.actionType.PayAction)
+            .filter((a) => a.actionStatus === factory.actionStatusType.CompletedActionStatus);
         // もし支払アクションがなければエラー
-        if (payAction === undefined) {
+        if (payActions.length === 0) {
             throw new factory.errors.NotFound('PayAction');
         }
 
@@ -210,21 +204,23 @@ export function confirm(
             potentialActions: {},
             purpose: placeOrderTransactionResult.order
         });
-        const refundActionAttributes = factory.action.trade.refund.createAttributes({
-            object: payAction,
-            agent: placeOrderTransaction.seller,
-            recipient: placeOrderTransaction.agent,
-            purpose: placeOrderTransactionResult.order,
-            potentialActions: {
-                sendEmailMessage: sendEmailMessageActionAttributes
-            }
+        const refundActions = payActions.map((payAction) => {
+            return factory.action.trade.refund.createAttributes({
+                object: payAction,
+                agent: placeOrderTransaction.seller,
+                recipient: placeOrderTransaction.agent,
+                purpose: placeOrderTransactionResult.order,
+                potentialActions: {
+                    sendEmailMessage: sendEmailMessageActionAttributes
+                }
+            });
         });
         const returnOrderActionAttributes = factory.action.transfer.returnAction.order.createAttributes({
             object: placeOrderTransactionResult.order,
             agent: placeOrderTransaction.agent,
             recipient: placeOrderTransaction.seller,
             potentialActions: {
-                refund: refundActionAttributes
+                refund: refundActions
             }
         });
         const result: factory.transaction.returnOrder.IResult = {

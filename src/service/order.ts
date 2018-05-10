@@ -237,18 +237,62 @@ function onReturn(transactionId: string, returnActionAttributes: factory.action.
             // tslint:disable-next-line:no-single-line-block-comment
             /* istanbul ignore else */
             if (returnActionAttributes.potentialActions.refund !== undefined) {
-                // 返金タスク作成
-                taskAttributes.push(factory.task.refundCreditCard.createAttributes({
-                    status: factory.taskStatus.Ready,
-                    runsAt: now, // なるはやで実行
-                    remainingNumberOfTries: 10,
-                    lastTriedAt: null,
-                    numberOfTried: 0,
-                    executionResults: [],
-                    data: {
-                        transactionId: transactionId
+                const refundActions = returnActionAttributes.potentialActions.refund;
+                refundActions.forEach((refundAction) => {
+                    const payAction = refundAction.object;
+                    const paymentMethodType = payAction.object.paymentMethod.paymentMethod;
+                    switch (paymentMethodType) {
+                        case factory.paymentMethodType.CreditCard:
+                            // クレジットカード返金タスク作成
+                            taskAttributes.push(factory.task.refundCreditCard.createAttributes({
+                                status: factory.taskStatus.Ready,
+                                runsAt: now, // なるはやで実行
+                                remainingNumberOfTries: 10,
+                                lastTriedAt: null,
+                                numberOfTried: 0,
+                                executionResults: [],
+                                data: {
+                                    transactionId: transactionId
+                                }
+                            }));
+
+                            break;
+
+                        case factory.paymentMethodType.Bluelab:
+                            // 返金タスク作成
+                            // taskAttributes.push(factory.task.refundCreditCard.createAttributes({
+                            //     status: factory.taskStatus.Ready,
+                            //     runsAt: now, // なるはやで実行
+                            //     remainingNumberOfTries: 10,
+                            //     lastTriedAt: null,
+                            //     numberOfTried: 0,
+                            //     executionResults: [],
+                            //     data: {
+                            //         transactionId: transactionId
+                            //     }
+                            // }));
+
+                            break;
+
+                        case factory.paymentMethodType.Pecorino:
+                            // Pecorino返金タスク作成
+                            taskAttributes.push(factory.task.refundPecorino.createAttributes({
+                                status: factory.taskStatus.Ready,
+                                runsAt: now, // なるはやで実行
+                                remainingNumberOfTries: 10,
+                                lastTriedAt: null,
+                                numberOfTried: 0,
+                                executionResults: [],
+                                data: {
+                                    transactionId: transactionId
+                                }
+                            }));
+
+                            break;
+
+                        default:
                     }
-                }));
+                });
             }
         }
 
