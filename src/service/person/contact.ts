@@ -84,57 +84,66 @@ export function update(
     contact: factory.person.IContact
 ) {
     return async () => {
-        return new Promise<void>((resolve, reject) => {
-            let formatedPhoneNumber: string;
-            try {
-                const phoneUtil = PhoneNumberUtil.getInstance();
-                const phoneNumber = phoneUtil.parse(contact.telephone, 'JP');
-                debug('isValidNumber:', phoneUtil.isValidNumber(phoneNumber));
-                if (!phoneUtil.isValidNumber(phoneNumber)) {
-                    throw new Error('Invalid phone number format.');
+        try {
+            await new Promise<void>((resolve, reject) => {
+                let formatedPhoneNumber: string;
+                try {
+                    const phoneUtil = PhoneNumberUtil.getInstance();
+                    const phoneNumber = phoneUtil.parse(contact.telephone, 'JP');
+                    debug('isValidNumber:', phoneUtil.isValidNumber(phoneNumber));
+                    if (!phoneUtil.isValidNumber(phoneNumber)) {
+                        throw new Error('Invalid phone number format.');
+                    }
+
+                    formatedPhoneNumber = phoneUtil.format(phoneNumber, PhoneNumberFormat.E164);
+                } catch (error) {
+                    reject(new factory.errors.Argument('telephone', 'invalid phone number format'));
+
+                    return;
                 }
 
-                formatedPhoneNumber = phoneUtil.format(phoneNumber, PhoneNumberFormat.E164);
-            } catch (error) {
-                reject(new factory.errors.Argument('telephone', 'invalid phone number format'));
-
-                return;
-            }
-
-            const cognitoIdentityServiceProvider = new AWS.CognitoIdentityServiceProvider({
-                apiVersion: 'latest',
-                region: 'ap-northeast-1'
-            });
-
-            cognitoIdentityServiceProvider.updateUserAttributes(
-                {
-                    AccessToken: accessToken,
-                    UserAttributes: [
-                        {
-                            Name: 'given_name',
-                            Value: contact.givenName
-                        },
-                        {
-                            Name: 'family_name',
-                            Value: contact.familyName
-                        },
-                        {
-                            Name: 'phone_number',
-                            Value: formatedPhoneNumber
-                        },
-                        {
-                            Name: 'email',
-                            Value: contact.email
-                        }
-                    ]
-                },
-                (err) => {
-                    if (err instanceof Error) {
-                        reject(new factory.errors.Argument('contact', err.message));
-                    } else {
-                        resolve();
-                    }
+                const cognitoIdentityServiceProvider = new AWS.CognitoIdentityServiceProvider({
+                    apiVersion: 'latest',
+                    region: 'ap-northeast-1'
                 });
-        });
+
+                cognitoIdentityServiceProvider.updateUserAttributes(
+                    {
+                        AccessToken: accessToken,
+                        UserAttributes: [
+                            {
+                                Name: 'given_name',
+                                Value: contact.givenName
+                            },
+                            {
+                                Name: 'family_name',
+                                Value: contact.familyName
+                            },
+                            {
+                                Name: 'phone_number',
+                                Value: formatedPhoneNumber
+                            },
+                            {
+                                Name: 'email',
+                                Value: contact.email
+                            }
+                        ]
+                    },
+                    (err) => {
+                        if (err instanceof Error) {
+                            reject(err);
+                        } else {
+                            resolve();
+                        }
+                    });
+            });
+        } catch (error) {
+            // AmazonCognitoAPIのレート制限をハンドリング
+            if (error.name === 'TooManyRequestsException') {
+                throw new factory.errors.RateLimitExceeded(`getUser ${error.message}`);
+            } else {
+                throw new factory.errors.Argument('contact', `${error.name}:${error.message}`);
+            }
+        }
     };
 }
