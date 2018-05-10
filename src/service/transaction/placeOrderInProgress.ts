@@ -238,10 +238,14 @@ export function setCustomerContact(
  * 取引確定
  */
 // tslint:disable-next-line:max-func-body-length
-export function confirm(
-    agentId: string,
-    transactionId: string
-) {
+export function confirm(params: {
+    agentId: string;
+    transactionId: string;
+    /**
+     * 注文メールを送信するかどうか
+     */
+    sendEmailMessage?: boolean;
+}) {
     // tslint:disable-next-line:max-func-body-length
     return async (repos: {
         action: ActionRepo;
@@ -251,8 +255,8 @@ export function confirm(
         orderNumber: OrderNumberRepo;
     }) => {
         const now = moment().toDate();
-        const transaction = await repos.transaction.findInProgressById(factory.transactionType.PlaceOrder, transactionId);
-        if (transaction.agent.id !== agentId) {
+        const transaction = await repos.transaction.findInProgressById(factory.transactionType.PlaceOrder, params.transactionId);
+        if (transaction.agent.id !== params.agentId) {
             throw new factory.errors.Forbidden('A specified transaction is not yours.');
         }
 
@@ -265,7 +269,7 @@ export function confirm(
         }
 
         // 取引に対する全ての承認アクションをマージ
-        let authorizeActions = await repos.action.findAuthorizeByTransactionId(transactionId);
+        let authorizeActions = await repos.action.findAuthorizeByTransactionId(params.transactionId);
 
         // 万が一このプロセス中に他処理が発生してもそれらを無視するように、endDateでフィルタリング
         authorizeActions = authorizeActions.filter((a) => (a.endDate !== undefined && a.endDate < now));
@@ -361,20 +365,25 @@ export function confirm(
             ownershipInfos: ownershipInfos
         };
 
-        const emailMessage = await createEmailMessageFromTransaction({
-            transaction: transaction,
-            customerContact: customerContact,
-            order: order,
-            seller: seller
-        });
-        const sendEmailMessageActionAttributes = factory.action.transfer.send.message.email.createAttributes({
-            actionStatus: factory.actionStatusType.ActiveActionStatus,
-            object: emailMessage,
-            agent: transaction.seller,
-            recipient: transaction.agent,
-            potentialActions: {},
-            purpose: order
-        });
+        let sendEmailMessageActionAttributes: factory.action.transfer.send.message.email.IAttributes | undefined;
+        // メール送信ONであれば送信アクション属性を生成
+        if (params.sendEmailMessage === true) {
+            const emailMessage = await createEmailMessageFromTransaction({
+                transaction: transaction,
+                customerContact: customerContact,
+                order: order,
+                seller: seller
+            });
+            sendEmailMessageActionAttributes = factory.action.transfer.send.message.email.createAttributes({
+                actionStatus: factory.actionStatusType.ActiveActionStatus,
+                object: emailMessage,
+                agent: transaction.seller,
+                recipient: transaction.agent,
+                potentialActions: {},
+                purpose: order
+            });
+        }
+
         const potentialActions: factory.transaction.placeOrder.IPotentialActions = {
             order: factory.action.trade.order.createAttributes({
                 object: order,
@@ -403,7 +412,7 @@ export function confirm(
         // ステータス変更
         debug('updating transaction...');
         await repos.transaction.confirmPlaceOrder(
-            transactionId,
+            params.transactionId,
             authorizeActions,
             result,
             potentialActions
