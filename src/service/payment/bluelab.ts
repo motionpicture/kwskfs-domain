@@ -60,7 +60,7 @@ export class BluelabService {
      */
     public async processPayment(params: IProcessPaymentParams): Promise<IProcessPaymentResult> {
         const response = await request.post({
-            url: `${this.endpoint}/dev/payment/purchase`,
+            url: `${this.endpoint}/payment/purchase`,
             headers: {
                 bluelabToken: params.accessToken,
                 'x-api-key': this.apiKey
@@ -91,7 +91,7 @@ export class BluelabService {
      */
     public async openAccount(params: IOpenAccountParams): Promise<IOpenAccountResult> {
         const response = await request.post({
-            url: `${this.endpoint}/dev/accountRegistration`,
+            url: `${this.endpoint}/accountRegistration`,
             headers: {
                 bluelabToken: params.accessToken,
                 'x-api-key': this.apiKey
