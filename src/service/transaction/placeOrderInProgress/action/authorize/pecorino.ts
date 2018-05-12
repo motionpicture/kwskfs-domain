@@ -95,6 +95,9 @@ export function create(params: {
                 pecorinoTransaction = await repos.payTransactionService.start({
                     // 最大1ヵ月のオーソリ
                     expires: moment().add(1, 'month').toDate(),
+                    agent: {
+                        name: `kwskfs-transaction-${transaction.id}`
+                    },
                     recipient: {
                         typeOf: 'Person',
                         id: transaction.seller.id,
@@ -123,6 +126,9 @@ export function create(params: {
                 pecorinoTransaction = await repos.transferTransactionService.start({
                     // 最大1ヵ月のオーソリ
                     expires: moment().add(1, 'month').toDate(),
+                    agent: {
+                        name: `kwskfs-transaction-${transaction.id}`
+                    },
                     recipient: {
                         typeOf: 'Person',
                         id: transaction.seller.id,
