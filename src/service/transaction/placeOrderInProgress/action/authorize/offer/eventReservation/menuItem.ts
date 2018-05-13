@@ -1,12 +1,13 @@
 /**
  * メニューアイテム承認アクションサービス
  */
-
 import * as factory from '@motionpicture/kwskfs-factory';
 import * as createDebug from 'debug';
+import * as moment from 'moment';
 
 import { MongoRepository as ActionRepo } from '../../../../../../../repo/action';
 import { MongoRepository as EventRepo } from '../../../../../../../repo/event';
+import { RedisRepository as OfferItemAvailabilityRepo } from '../../../../../../../repo/itemAvailability/offer';
 import { MongoRepository as OrganizationRepo } from '../../../../../../../repo/organization';
 import { MongoRepository as TransactionRepo } from '../../../../../../../repo/transaction';
 
@@ -17,6 +18,7 @@ export type ICreateOperation<T> = (repos: {
     event: EventRepo;
     action: ActionRepo;
     transaction: TransactionRepo;
+    offerItemAvailability: OfferItemAvailabilityRepo;
 }) => Promise<T>;
 
 export type IAuthorizeAction = factory.action.authorize.offer.eventReservation.menuItem.IAction;
@@ -38,7 +40,9 @@ export function create(params: {
         event: EventRepo;
         action: ActionRepo;
         transaction: TransactionRepo;
+        offerItemAvailability: OfferItemAvailabilityRepo;
     }) => {
+        const now = moment().toDate();
         const transaction = await repos.transaction.findInProgressById(factory.transactionType.PlaceOrder, params.transactionId);
 
         if (transaction.agent.id !== params.agentId) {
@@ -48,6 +52,13 @@ export function create(params: {
         const event = await repos.event.findByIdentifier(params.eventType, params.eventIdentifier);
         if (event.attendee === undefined) {
             throw new factory.errors.NotFound('Attendee for this event');
+        }
+
+        // イベント販売期間確認
+        if (event.startDate !== undefined
+            && event.endDate !== undefined
+            && (event.startDate > now || event.endDate < now)) {
+            throw new factory.errors.Argument('eventIdentifier', 'Out of sales period');
         }
 
         const attendee = event.attendee.find((a) => (<factory.organization.IOrganization>a).identifier === params.organizationIdentifier);
@@ -90,6 +101,14 @@ export function create(params: {
         const acceptedOffer = menuItem.offers.find((o) => o.identifier === params.offerIdentifier);
         if (acceptedOffer === undefined) {
             throw new factory.errors.NotFound('Offer');
+        }
+
+        // 在庫確認
+        const availabilities = await repos.offerItemAvailability.findByMenuItem(restaurant.id, menuItem.identifier);
+        const availability = availabilities[acceptedOffer.identifier];
+        // 在庫状況データが存在し、かつInStockでなければ注文不可
+        if (availability !== undefined && availability !== factory.itemAvailability.InStock) {
+            throw new factory.errors.Argument('offerIdentifier', 'Offer availability not InStock');
         }
 
         // 承認アクションを開始
