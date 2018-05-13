@@ -155,7 +155,10 @@ export function download(
                     { label: '予約イベント場所枝番号', default: '', value: 'superEventLocationBranchCode' },
                     { label: '予約イベント場所1', default: '', value: 'superEventLocation' },
                     { label: '予約イベント場所2', default: '', value: 'eventLocation' },
-                    { label: '予約チケット', default: '', value: 'reservedTickets' },
+                    { label: 'チケットトークン', default: '', value: 'reservedTickets.ticketToken' },
+                    { label: 'チケット金額', default: '', value: 'reservedTickets.totalPrice' },
+                    { label: 'チケットアイテム', default: '', value: 'reservedTickets.name' },
+                    { label: 'アイテム数', default: '', value: 'reservedTickets.numItems' },
                     { label: '注文番号', default: '', value: 'orderNumber' },
                     { label: '確認番号', default: '', value: 'confirmationNumber' },
                     { label: '金額', default: '', value: 'price' },
@@ -228,7 +231,12 @@ export interface ITransactionReport {
     superEventLocationBranchCode: string;
     superEventLocation: string;
     eventLocation: string;
-    reservedTickets: string[];
+    reservedTickets: {
+        ticketToken: string;
+        totalPrice: number;
+        name: string;
+        numItems: number;
+    }[];
     orderNumber: string;
     confirmationNumber: string;
     price: string;
@@ -254,25 +262,31 @@ export function transaction2report(transaction: factory.transaction.placeOrder.I
                 const ticket = offer.reservedTicket;
                 const ticketedSeat = ticket.ticketedSeat;
                 const ticketedMenuItem = ticket.ticketedMenuItem;
-                let ticketStr = `${ticket.ticketToken} ￥${ticket.totalPrice}`;
+                let name = '';
+                let numItems = 1;
                 if (ticketedSeat !== undefined) {
                     // tslint:disable-next-line:max-line-length
-                    ticketStr += ` ${ticketedSeat.seatNumber}`;
+                    name = ` ${ticketedSeat.seatNumber}`;
                 }
                 if (ticketedMenuItem !== undefined) {
                     // tslint:disable-next-line:max-line-length
-                    ticketStr += ` ${ticketedMenuItem.name}`;
+                    name = ` ${ticketedMenuItem.name}`;
                 }
                 if (offer.numSeats !== undefined) {
                     // tslint:disable-next-line:max-line-length
-                    ticketStr += ` x${offer.numSeats}`;
+                    numItems = offer.numSeats;
                 }
                 if (offer.numMenuItems !== undefined) {
                     // tslint:disable-next-line:max-line-length
-                    ticketStr += ` x${offer.numMenuItems}`;
+                    numItems = offer.numMenuItems;
                 }
 
-                return ticketStr;
+                return {
+                    ticketToken: ticket.ticketToken,
+                    totalPrice: ticket.totalPrice,
+                    name: name,
+                    numItems: numItems
+                };
             }
         );
 
