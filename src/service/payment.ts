@@ -665,6 +665,7 @@ export function refundCreditCard(transactionId: string) {
  * 注文返品取引からPecorino返金処理を実行する
  * @param transactionId 注文返品取引ID
  */
+// tslint:disable-next-line:max-func-body-length
 export function refundPecorino(transactionId: string) {
     return async (repos: {
         action: ActionRepo;
@@ -704,21 +705,48 @@ export function refundPecorino(transactionId: string) {
                 const authorizeActionResult = (<factory.action.authorize.pecorino.IResult>authorizeAction.result);
                 const pecorinoTransaction = authorizeActionResult.pecorinoTransaction;
 
-                // Pecorino入金取引で返金実行
-                const depositService = new pecorinoapi.service.transaction.Deposit({
-                    endpoint: authorizeActionResult.pecorinoEndpoint,
-                    auth: repos.pecorinoAuthClient
-                });
-                const depositTransaction = await depositService.start({
-                    toAccountId: pecorinoTransaction.object.fromAccountId,
-                    // tslint:disable-next-line:no-magic-numbers
-                    expires: moment().add(5, 'minutes').toDate(),
-                    agent: pecorinoTransaction.recipient,
-                    recipient: pecorinoTransaction.agent,
-                    price: pecorinoTransaction.object.price,
-                    notes: '川崎屋台村 返金'
-                });
-                await depositService.confirm({ transactionId: depositTransaction.id });
+                switch (pecorinoTransaction.typeOf) {
+                    case factory.pecorino.transactionType.Pay:
+                        // Pecorino入金取引で返金実行
+                        const depositService = new pecorinoapi.service.transaction.Deposit({
+                            endpoint: authorizeActionResult.pecorinoEndpoint,
+                            auth: repos.pecorinoAuthClient
+                        });
+                        const depositTransaction = await depositService.start({
+                            toAccountId: pecorinoTransaction.object.fromAccountId,
+                            // tslint:disable-next-line:no-magic-numbers
+                            expires: moment().add(5, 'minutes').toDate(),
+                            agent: pecorinoTransaction.recipient,
+                            recipient: pecorinoTransaction.agent,
+                            price: pecorinoTransaction.object.price,
+                            notes: '川崎屋台村 返金'
+                        });
+                        await depositService.confirm({ transactionId: depositTransaction.id });
+
+                        break;
+
+                    case factory.pecorino.transactionType.Transfer:
+                        // 口座振込の場合、逆の振込取引実行
+                        const transferService = new pecorinoapi.service.transaction.Transfer({
+                            endpoint: authorizeActionResult.pecorinoEndpoint,
+                            auth: repos.pecorinoAuthClient
+                        });
+                        const transferTransaction = await transferService.start({
+                            toAccountId: pecorinoTransaction.object.fromAccountId,
+                            fromAccountId: pecorinoTransaction.object.toAccountId,
+                            // tslint:disable-next-line:no-magic-numbers
+                            expires: moment().add(5, 'minutes').toDate(),
+                            agent: pecorinoTransaction.recipient,
+                            recipient: pecorinoTransaction.agent,
+                            price: pecorinoTransaction.object.price,
+                            notes: '川崎屋台村 返金'
+                        });
+                        await transferService.confirm({ transactionId: transferTransaction.id });
+
+                        break;
+
+                    default:
+                }
             } catch (error) {
                 // actionにエラー結果を追加
                 try {
