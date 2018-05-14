@@ -11,7 +11,7 @@
   "dependencies": {
     "@motionpicture/gmo-service": "^4.2.0",
     "@motionpicture/kwskfs-factory": "0.0.0-alpha.15",
-    "@motionpicture/pecorino-api-nodejs-client": "0.0.0-alpha.9",
+    "@motionpicture/pecorino-api-nodejs-client": "0.0.0-alpha.10",
     "@motionpicture/waiter-domain": "^2.0.2",
     "@sendgrid/mail": "^6.2.1",
     "@types/google-libphonenumber": "^7.4.14",
