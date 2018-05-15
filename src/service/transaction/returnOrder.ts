@@ -297,7 +297,7 @@ export async function createRefundEmail(params: {
                             sender: {
                                 typeOf: seller.typeOf,
                                 name: seller.name,
-                                email: 'noreply@ticket-cinemasunshine.com'
+                                email: 'noreply@motionpicture.jp'
                             },
                             toRecipient: {
                                 typeOf: params.transaction.agent.typeOf,
