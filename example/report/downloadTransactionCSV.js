@@ -15,7 +15,12 @@ async function main() {
             startThrough: moment().toDate()
         },
         'csv'
-    )({ transaction: new kwskfs.repository.Transaction(kwskfs.mongoose.connection) });
+    )({
+        action: new kwskfs.repository.Action(kwskfs.mongoose.connection),
+        ownershipInfo: new kwskfs.repository.OwnershipInfo(kwskfs.mongoose.connection),
+        order: new kwskfs.repository.Order(kwskfs.mongoose.connection),
+        transaction: new kwskfs.repository.Transaction(kwskfs.mongoose.connection)
+    });
     console.log(csv);
 
     await kwskfs.mongoose.disconnect();

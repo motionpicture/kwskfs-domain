@@ -203,6 +203,9 @@ describe('download', () => {
             }
         }];
 
+        const actionRepo = new kwskfs.repository.Action(kwskfs.mongoose.connection);
+        const orderRepo = new kwskfs.repository.Order(kwskfs.mongoose.connection);
+        const ownershipInfoRepo = new kwskfs.repository.OwnershipInfo(kwskfs.mongoose.connection);
         const transactionRepo = new kwskfs.repository.Transaction(kwskfs.mongoose.connection);
 
         sandbox.mock(transactionRepo).expects('searchPlaceOrder').once().resolves(transactions);
@@ -210,7 +213,12 @@ describe('download', () => {
         const result = await kwskfs.service.transaction.placeOrder.download(
             conditions,
             'csv'
-        )({ transaction: transactionRepo });
+        )({
+            action: actionRepo,
+            order: orderRepo,
+            ownershipInfo: ownershipInfoRepo,
+            transaction: transactionRepo
+        });
 
         assert(typeof result === 'string');
         sandbox.verify();
@@ -286,6 +294,9 @@ describe('download', () => {
             }
         ];
 
+        const actionRepo = new kwskfs.repository.Action(kwskfs.mongoose.connection);
+        const orderRepo = new kwskfs.repository.Order(kwskfs.mongoose.connection);
+        const ownershipInfoRepo = new kwskfs.repository.OwnershipInfo(kwskfs.mongoose.connection);
         const transactionRepo = new kwskfs.repository.Transaction(kwskfs.mongoose.connection);
 
         sandbox.mock(transactionRepo).expects('searchPlaceOrder').once().resolves(transactions);
@@ -293,7 +304,12 @@ describe('download', () => {
         const result = await kwskfs.service.transaction.placeOrder.download(
             conditions,
             'csv'
-        )({ transaction: transactionRepo });
+        )({
+            action: actionRepo,
+            order: orderRepo,
+            ownershipInfo: ownershipInfoRepo,
+            transaction: transactionRepo
+        });
 
         assert(typeof result === 'string');
         sandbox.verify();
@@ -316,6 +332,9 @@ describe('download', () => {
             }
         }];
 
+        const actionRepo = new kwskfs.repository.Action(kwskfs.mongoose.connection);
+        const orderRepo = new kwskfs.repository.Order(kwskfs.mongoose.connection);
+        const ownershipInfoRepo = new kwskfs.repository.OwnershipInfo(kwskfs.mongoose.connection);
         const transactionRepo = new kwskfs.repository.Transaction(kwskfs.mongoose.connection);
 
         sandbox.mock(transactionRepo).expects('searchPlaceOrder').once().resolves(transactions);
@@ -323,7 +342,12 @@ describe('download', () => {
         const result = await kwskfs.service.transaction.placeOrder.download(
             conditions,
             'csv'
-        )({ transaction: transactionRepo });
+        )({
+            action: actionRepo,
+            order: orderRepo,
+            ownershipInfo: ownershipInfoRepo,
+            transaction: transactionRepo
+        });
 
         assert(typeof result === 'string');
         sandbox.verify();
@@ -336,6 +360,9 @@ describe('download', () => {
         };
         const transactions: any[] = [];
 
+        const actionRepo = new kwskfs.repository.Action(kwskfs.mongoose.connection);
+        const orderRepo = new kwskfs.repository.Order(kwskfs.mongoose.connection);
+        const ownershipInfoRepo = new kwskfs.repository.OwnershipInfo(kwskfs.mongoose.connection);
         const transactionRepo = new kwskfs.repository.Transaction(kwskfs.mongoose.connection);
 
         sandbox.mock(transactionRepo).expects('searchPlaceOrder').once().resolves(transactions);
@@ -343,7 +370,12 @@ describe('download', () => {
         const result = await kwskfs.service.transaction.placeOrder.download(
             conditions,
             <any>'invalidformat'
-        )({ transaction: transactionRepo }).catch((err) => err);
+        )({
+            action: actionRepo,
+            order: orderRepo,
+            ownershipInfo: ownershipInfoRepo,
+            transaction: transactionRepo
+        }).catch((err) => err);
 
         assert(result instanceof kwskfs.factory.errors.NotImplemented);
         sandbox.verify();

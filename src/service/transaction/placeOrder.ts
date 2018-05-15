@@ -5,6 +5,9 @@ import * as factory from '@motionpicture/kwskfs-factory';
 import * as createDebug from 'debug';
 import * as json2csv from 'json2csv';
 
+import { MongoRepository as ActionRepo } from '../../repo/action';
+import { MongoRepository as OrderRepo } from '../../repo/order';
+import { MongoRepository as OwnershipInfoRepo } from '../../repo/ownershipInfo';
 import { MongoRepository as TaskRepo } from '../../repo/task';
 import { MongoRepository as TransactionRepo } from '../../repo/transaction';
 
@@ -111,6 +114,9 @@ export function exportTasksById(transactionId: string): ITaskAndTransactionOpera
     };
 }
 
+/**
+ * 取引ダウンロードフォーマット
+ */
 export type IDownloadFormat = 'csv';
 
 /**
@@ -118,6 +124,7 @@ export type IDownloadFormat = 'csv';
  * @param conditions 検索条件
  * @param format フォーマット
  */
+// tslint:disable-next-line:max-func-body-length
 export function download(
     conditions: {
         startFrom: Date;
@@ -125,13 +132,75 @@ export function download(
     },
     format: IDownloadFormat
 ) {
-    return async (repos: { transaction: TransactionRepo }): Promise<string> => {
+    // tslint:disable-next-line:max-func-body-length
+    return async (repos: {
+        action: ActionRepo;
+        order: OrderRepo;
+        ownershipInfo: OwnershipInfoRepo;
+        transaction: TransactionRepo;
+    }): Promise<string> => {
         // 取引検索
         const transactions = await repos.transaction.searchPlaceOrder(conditions);
         debug('transactions:', transactions);
 
+        // 確定取引の注文データ現状を取得する
+        const orderNumbers = transactions.filter((t) => t.status === factory.transactionStatusType.Confirmed)
+            .map((t) => (<factory.transaction.placeOrder.IResult>t.result).order.orderNumber);
+        const orders = <factory.order.IOrder[]>await repos.order.orderModel.find({
+            orderNumber: { $in: orderNumbers }
+        }).exec().then((docs) => docs.map((doc) => doc.toObject()));
+
+        // 所有権検索
+        const ownershipInfoIdentifiers = transactions.filter((t) => t.status === factory.transactionStatusType.Confirmed)
+            .reduce(
+                (a, b) => [...a, ...(<factory.transaction.placeOrder.IResult>b.result).ownershipInfos.map((o) => o.identifier)],
+                []
+            );
+        const ownershipInfos = await repos.ownershipInfo.ownershipInfoModel.find({
+            identifier: { $in: ownershipInfoIdentifiers }
+        }).exec().then((docs) => docs.map(
+            (doc) => <factory.ownershipInfo.IOwnershipInfo<factory.reservationType.EventReservation>>doc.toObject()
+        ));
+        debug(ownershipInfos.length, 'ownershipInfos found.');
+
+        // チェックインアクション検索
+        const ticketTokens = transactions.filter((t) => t.status === factory.transactionStatusType.Confirmed)
+            .reduce(
+                (a, b) => [
+                    ...a,
+                    ...(<factory.transaction.placeOrder.IResult>b.result).ownershipInfos.map((o) => o.typeOfGood.reservedTicket.ticketToken)
+                ],
+                []
+            );
+        const actions = await repos.action.actionModel.find({
+            typeOf: factory.actionType.CheckInAction,
+            'object.reservedTicket.ticketToken': {
+                $exists: true,
+                $in: ticketTokens
+            }
+        }).exec().then((docs) => docs.map((doc) => doc.toObject()));
+
         // 取引ごとに詳細を検索し、csvを作成する
-        const data = await Promise.all(transactions.map(async (transaction) => transaction2report(transaction)));
+        const data = await Promise.all(transactions.map(async (t) => {
+            if (t.status === factory.transactionStatusType.Confirmed) {
+                const orderNumber = (<factory.transaction.placeOrder.IResult>t.result).order.orderNumber;
+                const ownershipInfoIds = (<factory.transaction.placeOrder.IResult>t.result).ownershipInfos.map((o) => o.identifier);
+                const ticketTokens4transaction = (<factory.transaction.placeOrder.IResult>t.result).ownershipInfos.map(
+                    (o) => o.typeOfGood.reservedTicket.ticketToken
+                );
+
+                return transaction2report({
+                    order: orders.find((o) => o.orderNumber === orderNumber),
+                    ownershipInfos: ownershipInfos.filter((i) => ownershipInfoIds.indexOf(i.identifier) >= 0),
+                    checkinActions: actions.filter((a) => ticketTokens4transaction.indexOf(a.object.reservedTicket.ticketToken) >= 0),
+                    transaction: t
+                });
+            } else {
+                return transaction2report({
+                    transaction: t
+                });
+            }
+        }));
         debug('data:', data);
 
         if (format === 'csv') {
@@ -155,13 +224,13 @@ export function download(
                     { label: '予約イベント場所枝番号', default: '', value: 'superEventLocationBranchCode' },
                     { label: '予約イベント場所1', default: '', value: 'superEventLocation' },
                     { label: '予約イベント場所2', default: '', value: 'eventLocation' },
-                    { label: 'チケットトークン', default: '', value: 'reservedTickets.ticketToken' },
-                    { label: 'チケット金額', default: '', value: 'reservedTickets.totalPrice' },
-                    { label: 'チケットアイテム', default: '', value: 'reservedTickets.name' },
-                    { label: 'アイテム数', default: '', value: 'reservedTickets.numItems' },
+                    { label: '予約チケットトークン', default: '', value: 'reservedTickets.ticketToken' },
+                    { label: '予約チケット金額', default: '', value: 'reservedTickets.totalPrice' },
+                    { label: '予約チケットアイテム', default: '', value: 'reservedTickets.name' },
+                    { label: '予約チケットアイテム数', default: '', value: 'reservedTickets.numItems' },
                     { label: '注文番号', default: '', value: 'orderNumber' },
                     { label: '確認番号', default: '', value: 'confirmationNumber' },
-                    { label: '金額', default: '', value: 'price' },
+                    { label: '注文金額', default: '', value: 'price' },
                     { label: '決済方法1', default: '', value: 'paymentMethod.0' },
                     { label: '決済ID1', default: '', value: 'paymentMethodId.0' },
                     { label: '決済方法2', default: '', value: 'paymentMethod.1' },
@@ -181,7 +250,10 @@ export function download(
                     { label: '割引金額3', default: '', value: 'discountPrices.2' },
                     { label: '割引4', default: '', value: 'discounts.3' },
                     { label: '割引コード4', default: '', value: 'discountCodes.3' },
-                    { label: '割引金額4', default: '', value: 'discountPrices.3' }
+                    { label: '割引金額4', default: '', value: 'discountPrices.3' },
+                    { label: '注文状況', default: '', value: 'orderStatus' },
+                    { label: '予約チケットステータス', default: '', value: 'reservedTickets.reservationStatus' },
+                    { label: '予約チケットチェックイン数', default: '', value: 'reservedTickets.numCheckInActions' }
                 ];
                 const json2csvParser = new json2csv.Parser({
                     fields: fields,
@@ -236,8 +308,11 @@ export interface ITransactionReport {
         totalPrice: number;
         name: string;
         numItems: number;
+        reservationStatus: string;
+        numCheckInActions: number;
     }[];
     orderNumber: string;
+    orderStatus: string;
     confirmationNumber: string;
     price: string;
     paymentMethod: string[];
@@ -251,9 +326,16 @@ export interface ITransactionReport {
  * 注文取引をレポート形式に変換する
  * @param transaction 注文取引オブジェクト
  */
-export function transaction2report(transaction: factory.transaction.placeOrder.ITransaction): ITransactionReport {
-    if (transaction.result !== undefined) {
-        const order = transaction.result.order;
+// tslint:disable-next-line:max-func-body-length
+export function transaction2report(params: {
+    order?: factory.order.IOrder;
+    ownershipInfos?: factory.ownershipInfo.IOwnershipInfo<factory.reservationType.EventReservation>[];
+    checkinActions?: factory.action.IAction<factory.action.IAttributes<any, any>>[];
+    transaction: factory.transaction.placeOrder.ITransaction;
+}): ITransactionReport {
+    if (params.transaction.result !== undefined) {
+        // 注文データがまだ存在しなければ取引結果から参照
+        const order = (params.order !== undefined) ? params.order : params.transaction.result.order;
         const orderItems = order.acceptedOffers;
         const event = orderItems[0].itemOffered.reservationFor;
         const tickets = orderItems.map(
@@ -281,20 +363,36 @@ export function transaction2report(transaction: factory.transaction.placeOrder.I
                     numItems = offer.numMenuItems;
                 }
 
+                let reservationStatus = '';
+                if (params.ownershipInfos !== undefined) {
+                    const ownershipInfo = params.ownershipInfos.find((i) => i.typeOfGood.reservedTicket.ticketToken === ticket.ticketToken);
+                    if (ownershipInfo !== undefined) {
+                        reservationStatus = ownershipInfo.typeOfGood.reservationStatus;
+                    }
+                }
+                let numCheckInActions = 0;
+                if (params.checkinActions !== undefined) {
+                    numCheckInActions = params.checkinActions.filter(
+                        (a) => a.object.reservedTicket.ticketToken === ticket.ticketToken
+                    ).length;
+                }
+
                 return {
                     ticketToken: ticket.ticketToken,
                     totalPrice: ticket.totalPrice,
                     name: name,
-                    numItems: numItems
+                    numItems: numItems,
+                    reservationStatus: reservationStatus,
+                    numCheckInActions: numCheckInActions
                 };
             }
         );
 
         return {
-            id: transaction.id,
-            status: transaction.status,
-            startDate: (transaction.startDate !== undefined) ? transaction.startDate.toISOString() : '',
-            endDate: (transaction.endDate !== undefined) ? transaction.endDate.toISOString() : '',
+            id: params.transaction.id,
+            status: params.transaction.status,
+            startDate: (params.transaction.startDate !== undefined) ? params.transaction.startDate.toISOString() : '',
+            endDate: (params.transaction.endDate !== undefined) ? params.transaction.endDate.toISOString() : '',
             seller: order.seller,
             customer: order.customer,
             eventName: (event.name !== undefined) ? event.name.ja : '',
@@ -305,6 +403,7 @@ export function transaction2report(transaction: factory.transaction.placeOrder.I
             eventLocation: (event.location !== undefined && event.location.name !== undefined) ? event.location.name.ja : '',
             reservedTickets: tickets,
             orderNumber: order.orderNumber,
+            orderStatus: order.orderStatus,
             confirmationNumber: order.confirmationNumber.toString(),
             price: `${order.price} ${order.priceCurrency}`,
             paymentMethod: order.paymentMethods.map((method) => method.name),
@@ -314,20 +413,22 @@ export function transaction2report(transaction: factory.transaction.placeOrder.I
             discountPrices: order.discounts.map((discount) => `${discount.discount} ${discount.discountCurrency}`)
         };
     } else {
-        const customerContact = transaction.object.customerContact;
+        const customerContact = params.transaction.object.customerContact;
 
         return {
-            id: transaction.id,
-            status: transaction.status,
-            startDate: (transaction.startDate !== undefined) ? transaction.startDate.toISOString() : '',
-            endDate: (transaction.endDate !== undefined) ? transaction.endDate.toISOString() : '',
-            seller: transaction.seller,
+            id: params.transaction.id,
+            status: params.transaction.status,
+            startDate: (params.transaction.startDate !== undefined) ? params.transaction.startDate.toISOString() : '',
+            endDate: (params.transaction.endDate !== undefined) ? params.transaction.endDate.toISOString() : '',
+            seller: params.transaction.seller,
             customer: {
                 name: (customerContact !== undefined) ? `${customerContact.familyName} ${customerContact.givenName}` : '',
                 email: (customerContact !== undefined) ? customerContact.email : '',
                 telephone: (customerContact !== undefined) ? customerContact.telephone : '',
                 memberOf: {
-                    membershipNumber: (transaction.agent.memberOf !== undefined) ? transaction.agent.memberOf.membershipNumber : ''
+                    membershipNumber: (params.transaction.agent.memberOf !== undefined) ?
+                        params.transaction.agent.memberOf.membershipNumber :
+                        ''
                 }
             },
             eventName: '',
@@ -338,6 +439,7 @@ export function transaction2report(transaction: factory.transaction.placeOrder.I
             eventLocation: '',
             reservedTickets: [],
             orderNumber: '',
+            orderStatus: '',
             confirmationNumber: '',
             price: '',
             paymentMethod: [],

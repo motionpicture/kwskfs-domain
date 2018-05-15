@@ -11,6 +11,7 @@ import * as pecorinoapi from '@motionpicture/pecorino-api-nodejs-client';
 import * as mongoose from 'mongoose';
 import * as redis from 'redis';
 
+import * as AuthenticationService from './service/authentication';
 import * as DeliveryService from './service/delivery';
 import * as NotificationService from './service/notification';
 import * as OfferService from './service/offer';
@@ -114,6 +115,7 @@ export namespace repository {
 }
 
 export namespace service {
+    export import authentication = AuthenticationService;
     export import delivery = DeliveryService;
     export import offer = OfferService;
     export import notification = NotificationService;
