@@ -713,12 +713,12 @@ export function refundPecorino(transactionId: string) {
                             auth: repos.pecorinoAuthClient
                         });
                         const depositTransaction = await depositService.start({
-                            toAccountId: pecorinoTransaction.object.fromAccountId,
+                            toAccountNumber: pecorinoTransaction.object.fromAccountNumber,
                             // tslint:disable-next-line:no-magic-numbers
                             expires: moment().add(5, 'minutes').toDate(),
                             agent: pecorinoTransaction.recipient,
                             recipient: pecorinoTransaction.agent,
-                            price: pecorinoTransaction.object.price,
+                            amount: pecorinoTransaction.object.amount,
                             notes: '川崎屋台村 返金'
                         });
                         await depositService.confirm({ transactionId: depositTransaction.id });
@@ -732,13 +732,13 @@ export function refundPecorino(transactionId: string) {
                             auth: repos.pecorinoAuthClient
                         });
                         const transferTransaction = await transferService.start({
-                            toAccountId: pecorinoTransaction.object.fromAccountId,
-                            fromAccountId: pecorinoTransaction.object.toAccountId,
+                            toAccountNumber: pecorinoTransaction.object.fromAccountNumber,
+                            fromAccountNumber: pecorinoTransaction.object.toAccountNumber,
                             // tslint:disable-next-line:no-magic-numbers
                             expires: moment().add(5, 'minutes').toDate(),
                             agent: pecorinoTransaction.recipient,
                             recipient: pecorinoTransaction.agent,
-                            price: pecorinoTransaction.object.price,
+                            amount: pecorinoTransaction.object.amount,
                             notes: '川崎屋台村 返金'
                         });
                         await transferService.confirm({ transactionId: transferTransaction.id });

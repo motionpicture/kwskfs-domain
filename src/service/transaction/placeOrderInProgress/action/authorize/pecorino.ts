@@ -38,7 +38,7 @@ export function create(params: {
     /**
      * Pecorino口座ID
      */
-    fromAccountId: string;
+    fromAccountNumber: string;
     /**
      * 支払取引メモ
      */
@@ -104,9 +104,9 @@ export function create(params: {
                         name: transaction.seller.name,
                         url: transaction.seller.url
                     },
-                    price: params.price,
+                    amount: params.price,
                     notes: (params.notes !== undefined) ? params.notes : '川崎屋台村 支払取引',
-                    fromAccountId: params.fromAccountId
+                    fromAccountNumber: params.fromAccountNumber
                 });
                 debug('pecorinoTransaction started.', pecorinoTransaction.id);
             } else if (repos.transferTransactionService !== undefined) {
@@ -135,10 +135,10 @@ export function create(params: {
                         name: transaction.seller.name,
                         url: transaction.seller.url
                     },
-                    price: params.price,
+                    amount: params.price,
                     notes: (params.notes !== undefined) ? params.notes : '川崎屋台村 支払取引',
-                    fromAccountId: params.fromAccountId,
-                    toAccountId: pecorinoPaymentAccepted.accountId
+                    fromAccountNumber: params.fromAccountNumber,
+                    toAccountNumber: pecorinoPaymentAccepted.accountId
                 });
                 debug('pecorinoTransaction started.', pecorinoTransaction.id);
             } else {
@@ -160,7 +160,7 @@ export function create(params: {
                 const message = `${error.name}:${error.message}`;
                 switch (error.code) {
                     case BAD_REQUEST: // 400
-                        throw new factory.errors.Argument('fromAccountId', message);
+                        throw new factory.errors.Argument('fromAccountNumber', message);
                     case UNAUTHORIZED: // 401
                         throw new factory.errors.Unauthorized(message);
                     case FORBIDDEN: // 403
