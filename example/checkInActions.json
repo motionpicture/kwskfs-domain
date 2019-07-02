@@ -1,0 +1,893 @@
+[
+    {
+        "id": "5b00dcb6a7cc5500aa36cdbf",
+        "ticketToken": "2cc3ba83-633d-4109-b199-41cf91be1d1b",
+        "actionStatus": "CompletedActionStatus",
+        "startDate": "2018-05-20T02:25:58.097Z",
+        "endDate": "2018-05-20T02:25:58.122Z",
+        "sub": "eb209b29-2fe6-4b31-b2e5-af01f63438ca",
+        "username": "ryu"
+    },
+    {
+        "id": "5b00dcc89b902500bafae087",
+        "ticketToken": "2cc3ba83-633d-4109-b199-41cf91be1d1b",
+        "actionStatus": "CompletedActionStatus",
+        "startDate": "2018-05-20T02:26:16.179Z",
+        "endDate": "2018-05-20T02:26:16.200Z",
+        "sub": "eb209b29-2fe6-4b31-b2e5-af01f63438ca",
+        "username": "ryu"
+    },
+    {
+        "id": "5b00dcd61faa1200bd3a07f5",
+        "ticketToken": "854e05f8-edee-4818-a969-609cc00c70db",
+        "actionStatus": "CompletedActionStatus",
+        "startDate": "2018-05-20T02:26:30.509Z",
+        "endDate": "2018-05-20T02:26:30.525Z",
+        "sub": "f2c141e2-0f13-4bdc-9db9-e5e229faf3aa",
+        "username": "yamane"
+    },
+    {
+        "id": "5b00dd631faa1200bd3a07f6",
+        "ticketToken": "b099a0b3-6185-45e1-8846-7aff211daa5a",
+        "actionStatus": "CompletedActionStatus",
+        "startDate": "2018-05-20T02:28:51.381Z",
+        "endDate": "2018-05-20T02:28:51.402Z",
+        "sub": "091a532b-be05-474c-b980-8722742238ac",
+        "username": "KONAMI"
+    },
+    {
+        "id": "5b00dd9b1faa1200bd3a07f9",
+        "ticketToken": "0b02353b-f7d4-4d23-b129-47841809a892",
+        "actionStatus": "CompletedActionStatus",
+        "startDate": "2018-05-20T02:29:47.139Z",
+        "endDate": "2018-05-20T02:29:47.162Z",
+        "sub": "3ee80708-50ed-458b-a38f-f2df0cfba42c",
+        "username": "matsuken"
+    },
+    {
+        "id": "5b00ddcea7cc5500aa36cdc3",
+        "ticketToken": "e984d7d9-eb91-4149-8615-46995fd0de6b",
+        "actionStatus": "CompletedActionStatus",
+        "startDate": "2018-05-20T02:30:38.100Z",
+        "endDate": "2018-05-20T02:30:38.121Z",
+        "sub": "97a5e52d-5d25-49eb-874f-796220cd92d1",
+        "username": "s.ishii"
+    },
+    {
+        "id": "5b00ddd59b902500bafae08a",
+        "ticketToken": "6ae41f83-6cec-450f-81c2-578de2474379",
+        "actionStatus": "CompletedActionStatus",
+        "startDate": "2018-05-20T02:30:45.688Z",
+        "endDate": "2018-05-20T02:30:45.709Z",
+        "sub": "5c58aa30-b81d-46e7-9f12-6124f4969824",
+        "username": "Osamu"
+    },
+    {
+        "id": "5b00de1c9b902500bafae08b",
+        "ticketToken": "2f80f1f2-322d-427b-ac8f-23867d65f0c4",
+        "actionStatus": "CompletedActionStatus",
+        "startDate": "2018-05-20T02:31:56.671Z",
+        "endDate": "2018-05-20T02:31:56.692Z",
+        "sub": "fa80274b-9e43-4e33-9d06-d496bffa4c4d",
+        "username": "hataguchi2"
+    },
+    {
+        "id": "5b00ea179b902500bafae0d1",
+        "ticketToken": "7d2c5288-049a-4e09-ab7c-6487d282f4fa",
+        "actionStatus": "CompletedActionStatus",
+        "startDate": "2018-05-20T03:23:03.896Z",
+        "endDate": "2018-05-20T03:23:03.919Z",
+        "sub": "9e7e92ed-636c-498f-bde8-c300ff14f074",
+        "username": "Nana"
+    },
+    {
+        "id": "5b00ea2d9b902500bafae0d2",
+        "ticketToken": "09f361a2-5d56-4217-9719-a80822aff145",
+        "actionStatus": "CompletedActionStatus",
+        "startDate": "2018-05-20T03:23:25.799Z",
+        "endDate": "2018-05-20T03:23:25.824Z",
+        "sub": "eb1f6371-5f3d-41bd-8990-3bffbedd2271",
+        "username": "Osachi8"
+    },
+    {
+        "id": "5b00ea55a7cc5500aa36ce08",
+        "ticketToken": "979b297a-25a8-439d-b2dc-929de4d30757",
+        "actionStatus": "CompletedActionStatus",
+        "startDate": "2018-05-20T03:24:05.528Z",
+        "endDate": "2018-05-20T03:24:05.553Z",
+        "sub": "de1ac0c1-3a48-4b26-9a3a-3928de49729d",
+        "username": "Maib"
+    },
+    {
+        "id": "5b00ea739b902500bafae0d4",
+        "ticketToken": "c40b1dcd-fdf2-466d-ba38-b452be4a7c68",
+        "actionStatus": "CompletedActionStatus",
+        "startDate": "2018-05-20T03:24:35.412Z",
+        "endDate": "2018-05-20T03:24:35.432Z",
+        "sub": "d3c7ac11-aaeb-4129-8a0c-b50753779926",
+        "username": "masa"
+    },
+    {
+        "id": "5b00ea9aa7cc5500aa36ce0a",
+        "ticketToken": "5ac696e8-dc2e-4e9e-81c2-70f627ef9b9e",
+        "actionStatus": "CompletedActionStatus",
+        "startDate": "2018-05-20T03:25:14.525Z",
+        "endDate": "2018-05-20T03:25:14.553Z",
+        "sub": "591675e6-9523-44a2-b763-a8b7803ef917",
+        "username": "takashi.munehiro"
+    },
+    {
+        "id": "5b00eaa6a7cc5500aa36ce0b",
+        "ticketToken": "dedee651-6666-4e1f-bedd-1881058ab538",
+        "actionStatus": "CompletedActionStatus",
+        "startDate": "2018-05-20T03:25:26.129Z",
+        "endDate": "2018-05-20T03:25:26.143Z",
+        "sub": "7e29d694-122e-48d2-80f6-ca3e2847540e",
+        "username": "yuka"
+    },
+    {
+        "id": "5b00eb359b902500bafae0d8",
+        "ticketToken": "deddcbf8-6b4f-4434-bb7f-b10b17320b9b",
+        "actionStatus": "CompletedActionStatus",
+        "startDate": "2018-05-20T03:27:49.979Z",
+        "endDate": "2018-05-20T03:27:50.001Z",
+        "sub": "9d18fbce-2878-4a4a-b872-5a6685f5a7bc",
+        "username": "okzb"
+    },
+    {
+        "id": "5b00eb5ea7cc5500aa36ce10",
+        "ticketToken": "fae11381-ab4d-4a99-b39e-729078c0abf9",
+        "actionStatus": "CompletedActionStatus",
+        "startDate": "2018-05-20T03:28:30.798Z",
+        "endDate": "2018-05-20T03:28:30.821Z",
+        "sub": "3e6b4ede-90c0-4ca2-90e1-eed0c0095a40",
+        "username": "Ume"
+    },
+    {
+        "id": "5b00ecb19b902500bafae0df",
+        "ticketToken": "e0fbb1b5-f167-4608-bc60-96fa363042b7",
+        "actionStatus": "CompletedActionStatus",
+        "startDate": "2018-05-20T03:34:09.709Z",
+        "endDate": "2018-05-20T03:34:09.730Z",
+        "sub": "3c2e96aa-1f89-433a-96ea-dd8abd14e2ea",
+        "username": "katotomoya"
+    },
+    {
+        "id": "5b00eccda7cc5500aa36ce16",
+        "ticketToken": "4e08ec6f-8523-476d-8c01-539792b2a7a4",
+        "actionStatus": "CompletedActionStatus",
+        "startDate": "2018-05-20T03:34:37.366Z",
+        "endDate": "2018-05-20T03:34:37.386Z",
+        "sub": "1a0f0234-1059-48be-ba32-046af7c0303e",
+        "username": "hoshida"
+    },
+    {
+        "id": "5b00ecef9b902500bafae0e0",
+        "ticketToken": "eaed4904-c42a-46db-ba4b-42795fae1b34",
+        "actionStatus": "CompletedActionStatus",
+        "startDate": "2018-05-20T03:35:11.148Z",
+        "endDate": "2018-05-20T03:35:11.163Z",
+        "sub": "cea1a1d2-6cc8-43da-a1a2-9de5407f03c0",
+        "username": "jotaki"
+    },
+    {
+        "id": "5b00ecf9a7cc5500aa36ce17",
+        "ticketToken": "0c616281-1b18-4948-bffc-ac13cb7accca",
+        "actionStatus": "CompletedActionStatus",
+        "startDate": "2018-05-20T03:35:21.786Z",
+        "endDate": "2018-05-20T03:35:21.808Z",
+        "sub": "6d3dec5a-76f0-4c52-b8b2-cbaf4892faad",
+        "username": "matsu1013"
+    },
+    {
+        "id": "5b00ed0b1faa1200bd3a084c",
+        "ticketToken": "c42d53d7-63db-4360-994e-bee33dcfb203",
+        "actionStatus": "CompletedActionStatus",
+        "startDate": "2018-05-20T03:35:39.866Z",
+        "endDate": "2018-05-20T03:35:39.889Z",
+        "sub": "2c814190-c2ba-4be7-b6d6-f017f259aec0",
+        "username": "kurishima"
+    },
+    {
+        "id": "5b00ed201faa1200bd3a084e",
+        "ticketToken": "2c728326-e4a7-43cb-b416-f8947f5e420c",
+        "actionStatus": "CompletedActionStatus",
+        "startDate": "2018-05-20T03:36:00.062Z",
+        "endDate": "2018-05-20T03:36:00.095Z",
+        "sub": "e77eb5f5-25d3-4fb2-b2c7-e3f4bbb8d0c5",
+        "username": "numazaki"
+    },
+    {
+        "id": "5b00ed2ca7cc5500aa36ce19",
+        "ticketToken": "e853c52e-ddcd-4432-86a9-21ee58e3d562",
+        "actionStatus": "CompletedActionStatus",
+        "startDate": "2018-05-20T03:36:12.380Z",
+        "endDate": "2018-05-20T03:36:12.405Z",
+        "sub": "6be475fd-2ac9-4d5f-8023-16de1bba05d0",
+        "username": "Kusano"
+    },
+    {
+        "id": "5b00ed3f1faa1200bd3a084f",
+        "ticketToken": "30874043-e528-4c2a-be95-b267fb216707",
+        "actionStatus": "CompletedActionStatus",
+        "startDate": "2018-05-20T03:36:31.738Z",
+        "endDate": "2018-05-20T03:36:31.753Z",
+        "sub": "f6851ef5-4147-4d59-a309-e37c08699f67",
+        "username": "yokoyama"
+    },
+    {
+        "id": "5b00ed5d9b902500bafae0e2",
+        "ticketToken": "4b16d78d-265c-4f90-92fb-309e0b93550f",
+        "actionStatus": "CompletedActionStatus",
+        "startDate": "2018-05-20T03:37:01.252Z",
+        "endDate": "2018-05-20T03:37:01.274Z",
+        "sub": "6fc089ce-e172-4d19-a223-6cdd51b50ea9",
+        "username": "mpsato"
+    },
+    {
+        "id": "5b00ed65a7cc5500aa36ce1a",
+        "ticketToken": "916f3a42-fa2c-4a4c-bad9-511728b528a1",
+        "actionStatus": "CompletedActionStatus",
+        "startDate": "2018-05-20T03:37:09.140Z",
+        "endDate": "2018-05-20T03:37:09.165Z",
+        "sub": "306402be-c561-4020-84b6-a56b1c22c382",
+        "username": "sekinet2"
+    },
+    {
+        "id": "5b00edf91faa1200bd3a0851",
+        "ticketToken": "108e9438-600d-4abc-a07b-7a87d7dad712",
+        "actionStatus": "CompletedActionStatus",
+        "startDate": "2018-05-20T03:39:37.758Z",
+        "endDate": "2018-05-20T03:39:37.781Z",
+        "sub": "4892ca19-7c4c-4ec5-a62f-4757441eaace",
+        "username": "ilovegadd"
+    },
+    {
+        "id": "5b00edff9b902500bafae0e4",
+        "ticketToken": "108e9438-600d-4abc-a07b-7a87d7dad712",
+        "actionStatus": "CompletedActionStatus",
+        "startDate": "2018-05-20T03:39:43.712Z",
+        "endDate": "2018-05-20T03:39:43.738Z",
+        "sub": "4892ca19-7c4c-4ec5-a62f-4757441eaace",
+        "username": "ilovegadd"
+    },
+    {
+        "id": "5b00eef21faa1200bd3a0856",
+        "ticketToken": "5c35b470-46e7-4d3b-8389-c1a16da37bfc",
+        "actionStatus": "CompletedActionStatus",
+        "startDate": "2018-05-20T03:43:46.681Z",
+        "endDate": "2018-05-20T03:43:46.698Z",
+        "sub": "ef40434e-f7f1-46b1-b401-181030ec5564",
+        "username": "nishihara2"
+    },
+    {
+        "id": "5b00eefc1faa1200bd3a0857",
+        "ticketToken": "5c35b470-46e7-4d3b-8389-c1a16da37bfc",
+        "actionStatus": "CompletedActionStatus",
+        "startDate": "2018-05-20T03:43:56.796Z",
+        "endDate": "2018-05-20T03:43:56.823Z",
+        "sub": "ef40434e-f7f1-46b1-b401-181030ec5564",
+        "username": "nishihara2"
+    },
+    {
+        "id": "5b00f06b1faa1200bd3a0858",
+        "ticketToken": "4b16d78d-265c-4f90-92fb-309e0b93550f",
+        "actionStatus": "CompletedActionStatus",
+        "startDate": "2018-05-20T03:50:03.329Z",
+        "endDate": "2018-05-20T03:50:03.342Z",
+        "sub": "6fc089ce-e172-4d19-a223-6cdd51b50ea9",
+        "username": "mpsato"
+    },
+    {
+        "id": "5b00f0eb9b902500bafae0ea",
+        "ticketToken": "d71ecbc7-6c81-42f8-8b5d-97d48800deb3",
+        "actionStatus": "CompletedActionStatus",
+        "startDate": "2018-05-20T03:52:11.517Z",
+        "endDate": "2018-05-20T03:52:11.565Z",
+        "sub": "1318f11a-5207-4d60-96af-088f5f16db8b",
+        "username": "hiro.i"
+    },
+    {
+        "id": "5b00f0f8a7cc5500aa36ce21",
+        "ticketToken": "02217dbe-cc75-40af-b663-fca0dff2bec6",
+        "actionStatus": "CompletedActionStatus",
+        "startDate": "2018-05-20T03:52:24.340Z",
+        "endDate": "2018-05-20T03:52:25.239Z",
+        "sub": "69f747f0-9c96-4c2d-b72d-7a694feb38cc",
+        "username": "kig9881"
+    },
+    {
+        "id": "5b00f1019b902500bafae0eb",
+        "ticketToken": "b0384a7b-6c54-4f85-b244-8f3b559558a1",
+        "actionStatus": "CompletedActionStatus",
+        "startDate": "2018-05-20T03:52:33.101Z",
+        "endDate": "2018-05-20T03:52:33.118Z",
+        "sub": "e484b705-4f42-4869-92ad-f489ed8a974f",
+        "username": "umeko"
+    },
+    {
+        "id": "5b00f1079b902500bafae0ec",
+        "ticketToken": "887894bd-6ee3-4f85-81a2-f06ffb61acbe",
+        "actionStatus": "CompletedActionStatus",
+        "startDate": "2018-05-20T03:52:39.344Z",
+        "endDate": "2018-05-20T03:52:39.360Z",
+        "sub": "0d000a76-cf3c-4e06-8e6b-9ab87b114203",
+        "username": "hg"
+    },
+    {
+        "id": "5b00f114a7cc5500aa36ce22",
+        "ticketToken": "3e5ddd34-6edd-428a-9544-95c2dca1bd01",
+        "actionStatus": "CompletedActionStatus",
+        "startDate": "2018-05-20T03:52:52.725Z",
+        "endDate": "2018-05-20T03:52:52.763Z",
+        "sub": "3af322fb-2915-4015-9d7a-1fbba26291c9",
+        "username": "Mayuko"
+    },
+    {
+        "id": "5b00f11ca7cc5500aa36ce23",
+        "ticketToken": "91cdd7e0-53e9-489d-b95a-1ba69383cb96",
+        "actionStatus": "CompletedActionStatus",
+        "startDate": "2018-05-20T03:53:00.412Z",
+        "endDate": "2018-05-20T03:53:00.434Z",
+        "sub": "826f9843-9ac5-41da-985c-a2952e448158",
+        "username": "Keiko"
+    },
+    {
+        "id": "5b00f12e1faa1200bd3a085b",
+        "ticketToken": "7f7d55c3-6340-4576-9227-bb713d4565f1",
+        "actionStatus": "CompletedActionStatus",
+        "startDate": "2018-05-20T03:53:18.530Z",
+        "endDate": "2018-05-20T03:53:18.547Z",
+        "sub": "1aaf661a-a067-448e-88a2-9a0fdeb4e5c9",
+        "username": "Masayoshi"
+    },
+    {
+        "id": "5b00f142a7cc5500aa36ce24",
+        "ticketToken": "59387bcf-9faf-4530-b21a-935890bbc109",
+        "actionStatus": "CompletedActionStatus",
+        "startDate": "2018-05-20T03:53:38.533Z",
+        "endDate": "2018-05-20T03:53:38.554Z",
+        "sub": "958158a2-39a0-439b-97e1-e6fda4523b56",
+        "username": "okayu"
+    },
+    {
+        "id": "5b00f1599b902500bafae0ee",
+        "ticketToken": "fe5d6aa8-5eeb-4dd2-a6b6-c023d23418fd",
+        "actionStatus": "CompletedActionStatus",
+        "startDate": "2018-05-20T03:54:01.102Z",
+        "endDate": "2018-05-20T03:54:01.126Z",
+        "sub": "485c4a85-7368-47f5-abdd-cc9a52aa68b1",
+        "username": "ukai2"
+    },
+    {
+        "id": "5b00f22b1faa1200bd3a085d",
+        "ticketToken": "7a9dc00d-3136-418b-890e-3808b74689b2",
+        "actionStatus": "CompletedActionStatus",
+        "startDate": "2018-05-20T03:57:31.788Z",
+        "endDate": "2018-05-20T03:57:31.823Z",
+        "sub": "5f14eafc-b0a1-4c48-9afe-46d2d5f585a5",
+        "username": "TI"
+    },
+    {
+        "id": "5b00f24fa7cc5500aa36ce25",
+        "ticketToken": "849566b8-ba50-417f-82ce-bfc0308f9d98",
+        "actionStatus": "CompletedActionStatus",
+        "startDate": "2018-05-20T03:58:07.622Z",
+        "endDate": "2018-05-20T03:58:07.810Z",
+        "sub": "298da1fb-c760-4084-b171-1950ee8ec976",
+        "username": "TsukasaWatanabe"
+    },
+    {
+        "id": "5b00f2eea7cc5500aa36ce28",
+        "ticketToken": "229172b6-a71d-4879-ad2d-df7d803eee73",
+        "actionStatus": "CompletedActionStatus",
+        "startDate": "2018-05-20T04:00:46.348Z",
+        "endDate": "2018-05-20T04:00:46.370Z",
+        "sub": "20de1dd3-b811-48ec-9274-84266e1fbc8e",
+        "username": "yutaka"
+    },
+    {
+        "id": "5b00f2f89b902500bafae0f0",
+        "ticketToken": "114fd1d2-3dd8-4be6-90c7-9889a701352d",
+        "actionStatus": "CompletedActionStatus",
+        "startDate": "2018-05-20T04:00:56.673Z",
+        "endDate": "2018-05-20T04:00:56.693Z",
+        "sub": "44aee536-7b0f-4c55-9383-0a384abde927",
+        "username": "zawazawa"
+    },
+    {
+        "id": "5b00f2fd9b902500bafae0f1",
+        "ticketToken": "ffa23ad1-85c7-4a33-979f-4a3d1b9db262",
+        "actionStatus": "CompletedActionStatus",
+        "startDate": "2018-05-20T04:01:01.780Z",
+        "endDate": "2018-05-20T04:01:01.799Z",
+        "sub": "454fa972-233d-4585-8407-492fdff39204",
+        "username": "fumi07"
+    },
+    {
+        "id": "5b00f30b9b902500bafae0f2",
+        "ticketToken": "8b9eab67-81db-42d4-b2e4-3de4abdc3007",
+        "actionStatus": "CompletedActionStatus",
+        "startDate": "2018-05-20T04:01:15.302Z",
+        "endDate": "2018-05-20T04:01:15.324Z",
+        "sub": "c0b327ea-e12b-4b72-90e1-6544b68d99a4",
+        "username": "Ogawa"
+    },
+    {
+        "id": "5b00f49a1faa1200bd3a0868",
+        "ticketToken": "f704368a-7586-47b3-b6cc-7fdb5dcf0dfd",
+        "actionStatus": "CompletedActionStatus",
+        "startDate": "2018-05-20T04:07:54.931Z",
+        "endDate": "2018-05-20T04:07:54.946Z",
+        "sub": "557af855-357b-4830-9c2d-5a4b159c2ebb",
+        "username": "iishin"
+    },
+    {
+        "id": "5b00f738a7cc5500aa36ce38",
+        "ticketToken": "fcc39e6f-44a9-4961-881e-839b02d01267",
+        "actionStatus": "CompletedActionStatus",
+        "startDate": "2018-05-20T04:19:04.256Z",
+        "endDate": "2018-05-20T04:19:05.021Z",
+        "sub": "2a542c88-26cf-42e7-9467-9030b291fa7b",
+        "username": "kmmtmshr"
+    },
+    {
+        "id": "5b00f73fa7cc5500aa36ce39",
+        "ticketToken": "7ef31441-19d7-4b3f-a32b-39f2e5ab7dc7",
+        "actionStatus": "CompletedActionStatus",
+        "startDate": "2018-05-20T04:19:11.455Z",
+        "endDate": "2018-05-20T04:19:11.481Z",
+        "sub": "e2c8bd0f-42ef-4bcd-a88b-64da8c6c2198",
+        "username": "ikaihsoy1014"
+    },
+    {
+        "id": "5b00f74aa7cc5500aa36ce3a",
+        "ticketToken": "83951abf-542c-4985-a984-92f9e3613211",
+        "actionStatus": "CompletedActionStatus",
+        "startDate": "2018-05-20T04:19:22.799Z",
+        "endDate": "2018-05-20T04:19:22.819Z",
+        "sub": "532332ed-d6cf-4feb-bc97-a5b9e1db8551",
+        "username": "bigcity_1010"
+    },
+    {
+        "id": "5b00f7531faa1200bd3a0875",
+        "ticketToken": "f1cce048-c8c2-490d-9a52-267d84cc4f9d",
+        "actionStatus": "CompletedActionStatus",
+        "startDate": "2018-05-20T04:19:31.782Z",
+        "endDate": "2018-05-20T04:19:31.800Z",
+        "sub": "06ee9b3e-a754-466b-b286-a36c39108213",
+        "username": "t-asakur"
+    },
+    {
+        "id": "5b00f7a41faa1200bd3a0879",
+        "ticketToken": "a601fc88-0c5d-4427-b972-04fa13fbbea9",
+        "actionStatus": "CompletedActionStatus",
+        "startDate": "2018-05-20T04:20:52.100Z",
+        "endDate": "2018-05-20T04:20:52.123Z",
+        "sub": "40806477-d4e2-4b79-9278-5f3627717903",
+        "username": "hiro"
+    },
+    {
+        "id": "5b00f7b71faa1200bd3a087c",
+        "ticketToken": "446830d1-952b-43f4-af83-ccb14215f34c",
+        "actionStatus": "CompletedActionStatus",
+        "startDate": "2018-05-20T04:21:11.358Z",
+        "endDate": "2018-05-20T04:21:11.380Z",
+        "sub": "6c50d6a1-5aec-4b77-9e04-4819fc1935a5",
+        "username": "yume"
+    },
+    {
+        "id": "5b00f8a0a7cc5500aa36ce47",
+        "ticketToken": "a675c57f-1eaa-4110-afd5-f36d2f38e651",
+        "actionStatus": "CompletedActionStatus",
+        "startDate": "2018-05-20T04:25:04.679Z",
+        "endDate": "2018-05-20T04:25:05.015Z",
+        "sub": "9c6fe27d-8a89-4f1e-902a-b84183895203",
+        "username": "Yuka"
+    },
+    {
+        "id": "5b00f8a3a7cc5500aa36ce4a",
+        "ticketToken": "a675c57f-1eaa-4110-afd5-f36d2f38e651",
+        "actionStatus": "CompletedActionStatus",
+        "startDate": "2018-05-20T04:25:07.756Z",
+        "endDate": "2018-05-20T04:25:07.777Z",
+        "sub": "9c6fe27d-8a89-4f1e-902a-b84183895203",
+        "username": "Yuka"
+    },
+    {
+        "id": "5b00f8ab1faa1200bd3a0888",
+        "ticketToken": "eb74d0b7-699b-488c-b5b3-cfef5128e69b",
+        "actionStatus": "CompletedActionStatus",
+        "startDate": "2018-05-20T04:25:15.229Z",
+        "endDate": "2018-05-20T04:25:15.255Z",
+        "sub": "0beeec7c-7198-4797-b488-10d3a4c167d2",
+        "username": "AY"
+    },
+    {
+        "id": "5b00f8c0a7cc5500aa36ce4d",
+        "ticketToken": "f39343e7-b6c0-4af8-bebc-663ba005f902",
+        "actionStatus": "CompletedActionStatus",
+        "startDate": "2018-05-20T04:25:36.556Z",
+        "endDate": "2018-05-20T04:25:36.576Z",
+        "sub": "304dc0a8-ebd4-41a9-945a-b53b29c2cdb4",
+        "username": "kawano"
+    },
+    {
+        "id": "5b00f8ef1faa1200bd3a088c",
+        "ticketToken": "de8f91d4-07be-46be-aac4-ac6705db55ee",
+        "actionStatus": "CompletedActionStatus",
+        "startDate": "2018-05-20T04:26:23.802Z",
+        "endDate": "2018-05-20T04:26:23.818Z",
+        "sub": "3e03d1ae-0a40-4b47-8b9d-3580a3ec6ed0",
+        "username": "sei"
+    },
+    {
+        "id": "5b00f8f69b902500bafae11f",
+        "ticketToken": "2bbcbe24-bd17-4226-aaa3-f350a9564add",
+        "actionStatus": "CompletedActionStatus",
+        "startDate": "2018-05-20T04:26:30.038Z",
+        "endDate": "2018-05-20T04:26:30.060Z",
+        "sub": "5124b762-d6c8-43a9-8326-994b316f2034",
+        "username": "akiramatsuida"
+    },
+    {
+        "id": "5b00f8ffa7cc5500aa36ce51",
+        "ticketToken": "18b297bf-3fa8-4f9c-a3fd-9ab5fb7c554c",
+        "actionStatus": "CompletedActionStatus",
+        "startDate": "2018-05-20T04:26:39.109Z",
+        "endDate": "2018-05-20T04:26:39.342Z",
+        "sub": "f604284e-7298-4ef0-ab80-66097d7616eb",
+        "username": "kazu617"
+    },
+    {
+        "id": "5b00f9051faa1200bd3a088d",
+        "ticketToken": "f361778f-b0cb-460c-a68b-b0fd7ae26c9b",
+        "actionStatus": "CompletedActionStatus",
+        "startDate": "2018-05-20T04:26:45.222Z",
+        "endDate": "2018-05-20T04:26:45.273Z",
+        "sub": "ae116104-09bb-4143-bd98-5407a98f113f",
+        "username": "natsumi"
+    },
+    {
+        "id": "5b00f90ba7cc5500aa36ce52",
+        "ticketToken": "7effa57e-427d-405f-844f-44af8da0e678",
+        "actionStatus": "CompletedActionStatus",
+        "startDate": "2018-05-20T04:26:51.677Z",
+        "endDate": "2018-05-20T04:26:51.699Z",
+        "sub": "11fa6781-ff75-4df3-b5a7-da110f9dfaef",
+        "username": "Nanami"
+    },
+    {
+        "id": "5b00f9439b902500bafae122",
+        "ticketToken": "a68846e0-6a0d-42ff-b974-c089d40ea8eb",
+        "actionStatus": "CompletedActionStatus",
+        "startDate": "2018-05-20T04:27:47.041Z",
+        "endDate": "2018-05-20T04:27:47.068Z",
+        "sub": "61859fa8-438c-4efd-a87f-b91d8f370062",
+        "username": "kawahara0215"
+    },
+    {
+        "id": "5b00f9989b902500bafae125",
+        "ticketToken": "030375e5-2277-4b94-a921-ace075969763",
+        "actionStatus": "CompletedActionStatus",
+        "startDate": "2018-05-20T04:29:12.963Z",
+        "endDate": "2018-05-20T04:29:12.981Z",
+        "sub": "a401bf07-f1c6-43f4-9a1f-df61f9337345",
+        "username": "saikikenji"
+    },
+    {
+        "id": "5b00fa009b902500bafae12c",
+        "ticketToken": "554aad23-5dd6-429b-889c-367018628ee1",
+        "actionStatus": "CompletedActionStatus",
+        "startDate": "2018-05-20T04:30:56.346Z",
+        "endDate": "2018-05-20T04:30:56.366Z",
+        "sub": "e43df90b-9d70-491e-8eb2-ea6285a4e625",
+        "username": "naoya"
+    },
+    {
+        "id": "5b00fa079b902500bafae12d",
+        "ticketToken": "5a41b066-6041-4752-bb8e-5f0e1d4e81be",
+        "actionStatus": "CompletedActionStatus",
+        "startDate": "2018-05-20T04:31:03.433Z",
+        "endDate": "2018-05-20T04:31:03.458Z",
+        "sub": "0e368b52-b1f3-416f-bf9e-eb74c01c009b",
+        "username": "nanako"
+    },
+    {
+        "id": "5b00fb0a9b902500bafae137",
+        "ticketToken": "dd143be9-6a6c-40de-bb36-dbed9f32176a",
+        "actionStatus": "CompletedActionStatus",
+        "startDate": "2018-05-20T04:35:22.317Z",
+        "endDate": "2018-05-20T04:35:22.340Z",
+        "sub": "54f7d008-9355-48fb-9019-9ffefc71e913",
+        "username": "ippe65"
+    },
+    {
+        "id": "5b00fc331faa1200bd3a08af",
+        "ticketToken": "9a301b8d-d1ad-4e3d-bd20-68df5043f2c1",
+        "actionStatus": "CompletedActionStatus",
+        "startDate": "2018-05-20T04:40:19.417Z",
+        "endDate": "2018-05-20T04:40:19.441Z",
+        "sub": "ae4f71cd-9dd4-41ab-80b3-78b52361a7d1",
+        "username": "n-imayoshi"
+    },
+    {
+        "id": "5b00fc371faa1200bd3a08b0",
+        "ticketToken": "9a301b8d-d1ad-4e3d-bd20-68df5043f2c1",
+        "actionStatus": "CompletedActionStatus",
+        "startDate": "2018-05-20T04:40:23.091Z",
+        "endDate": "2018-05-20T04:40:23.111Z",
+        "sub": "ae4f71cd-9dd4-41ab-80b3-78b52361a7d1",
+        "username": "n-imayoshi"
+    },
+    {
+        "id": "5b00fcbb1faa1200bd3a08b5",
+        "ticketToken": "b7318fdb-aa2f-4898-8e3a-acda8c19e8af",
+        "actionStatus": "CompletedActionStatus",
+        "startDate": "2018-05-20T04:42:35.361Z",
+        "endDate": "2018-05-20T04:42:35.398Z",
+        "sub": "ddde6a5b-5880-4ed1-a715-da041ad83f38",
+        "username": "小山田純平"
+    },
+    {
+        "id": "5b00fcbe1faa1200bd3a08b6",
+        "ticketToken": "b7318fdb-aa2f-4898-8e3a-acda8c19e8af",
+        "actionStatus": "CompletedActionStatus",
+        "startDate": "2018-05-20T04:42:38.702Z",
+        "endDate": "2018-05-20T04:42:38.716Z",
+        "sub": "ddde6a5b-5880-4ed1-a715-da041ad83f38",
+        "username": "小山田純平"
+    },
+    {
+        "id": "5b00fcf01faa1200bd3a08b8",
+        "ticketToken": "c3842e1c-63d7-47d3-a1d0-30f4a2f510ae",
+        "actionStatus": "CompletedActionStatus",
+        "startDate": "2018-05-20T04:43:28.147Z",
+        "endDate": "2018-05-20T04:43:28.173Z",
+        "sub": "a4ade2e2-4c9f-43e8-9125-003451ed48bb",
+        "username": "kuwahara"
+    },
+    {
+        "id": "5b00fd9c1faa1200bd3a08c1",
+        "ticketToken": "a3fc9bdb-1868-4921-961c-dacc002ab57d",
+        "actionStatus": "CompletedActionStatus",
+        "startDate": "2018-05-20T04:46:20.783Z",
+        "endDate": "2018-05-20T04:46:20.820Z",
+        "sub": "d55f81f4-37d7-46a0-9983-15c0a12b5037",
+        "username": "Mizuki"
+    },
+    {
+        "id": "5b00fda39b902500bafae156",
+        "ticketToken": "a3fc9bdb-1868-4921-961c-dacc002ab57d",
+        "actionStatus": "CompletedActionStatus",
+        "startDate": "2018-05-20T04:46:27.305Z",
+        "endDate": "2018-05-20T04:46:27.329Z",
+        "sub": "d55f81f4-37d7-46a0-9983-15c0a12b5037",
+        "username": "Mizuki"
+    },
+    {
+        "id": "5b00fdb3a7cc5500aa36ce94",
+        "ticketToken": "4ec756d1-a200-4cee-b193-9d54110ba409",
+        "actionStatus": "CompletedActionStatus",
+        "startDate": "2018-05-20T04:46:43.630Z",
+        "endDate": "2018-05-20T04:46:43.658Z",
+        "sub": "709744a2-45be-4255-97c8-c8f22a7974bc",
+        "username": "Risako"
+    },
+    {
+        "id": "5b00fdbba7cc5500aa36ce95",
+        "ticketToken": "3af6d528-3a00-4fff-899b-5b5491a22d97",
+        "actionStatus": "CompletedActionStatus",
+        "startDate": "2018-05-20T04:46:51.406Z",
+        "endDate": "2018-05-20T04:46:51.429Z",
+        "sub": "304b2033-323c-4739-a957-4d3dcf80415e",
+        "username": "shiho"
+    },
+    {
+        "id": "5b00fdde1faa1200bd3a08c3",
+        "ticketToken": "e0fbb1b5-f167-4608-bc60-96fa363042b7",
+        "actionStatus": "CompletedActionStatus",
+        "startDate": "2018-05-20T04:47:26.295Z",
+        "endDate": "2018-05-20T04:47:26.318Z",
+        "sub": "3c2e96aa-1f89-433a-96ea-dd8abd14e2ea",
+        "username": "katotomoya"
+    },
+    {
+        "id": "5b00fde49b902500bafae158",
+        "ticketToken": "e0fbb1b5-f167-4608-bc60-96fa363042b7",
+        "actionStatus": "CompletedActionStatus",
+        "startDate": "2018-05-20T04:47:32.803Z",
+        "endDate": "2018-05-20T04:47:32.987Z",
+        "sub": "3c2e96aa-1f89-433a-96ea-dd8abd14e2ea",
+        "username": "katotomoya"
+    },
+    {
+        "id": "5b00febe9b902500bafae163",
+        "ticketToken": "fae91528-97b6-4294-a453-d4dbae3470f0",
+        "actionStatus": "CompletedActionStatus",
+        "startDate": "2018-05-20T04:51:10.465Z",
+        "endDate": "2018-05-20T04:51:10.482Z",
+        "sub": "e15a9b75-a2b6-4690-b390-220f376f91fe",
+        "username": "myamaguchi"
+    },
+    {
+        "id": "5b00fec4a7cc5500aa36ce9a",
+        "ticketToken": "1c645906-7ec6-4028-82e7-9bb5394c6f89",
+        "actionStatus": "CompletedActionStatus",
+        "startDate": "2018-05-20T04:51:16.149Z",
+        "endDate": "2018-05-20T04:51:16.169Z",
+        "sub": "bcdb68be-d9fc-484a-a926-bcc897bead1c",
+        "username": "Nakamaru"
+    },
+    {
+        "id": "5b00fecf1faa1200bd3a08c7",
+        "ticketToken": "0b365a79-62d3-4221-8bf5-8b6160934f7e",
+        "actionStatus": "CompletedActionStatus",
+        "startDate": "2018-05-20T04:51:27.339Z",
+        "endDate": "2018-05-20T04:51:27.358Z",
+        "sub": "0ad63e5a-036c-4254-a0e3-34645b9016d3",
+        "username": "kazumats"
+    },
+    {
+        "id": "5b010065a7cc5500aa36ceb0",
+        "ticketToken": "ad2cb378-b5f2-4b4a-9cdb-3527c6cb21f9",
+        "actionStatus": "CompletedActionStatus",
+        "startDate": "2018-05-20T04:58:13.355Z",
+        "endDate": "2018-05-20T04:58:13.528Z",
+        "sub": "782c2415-36a5-4c83-b9c7-5d7fd86e88fa",
+        "username": "Kaoru"
+    },
+    {
+        "id": "5b01007da7cc5500aa36ceb1",
+        "ticketToken": "57a24646-cd32-405f-98da-1541bcad81df",
+        "actionStatus": "CompletedActionStatus",
+        "startDate": "2018-05-20T04:58:37.878Z",
+        "endDate": "2018-05-20T04:58:37.898Z",
+        "sub": "ebfb7d01-2dff-402f-877b-4d2b37df3534",
+        "username": "munetosiyamada"
+    },
+    {
+        "id": "5b0100929b902500bafae17c",
+        "ticketToken": "b65cf905-c6c5-4268-b110-40701e46998f",
+        "actionStatus": "CompletedActionStatus",
+        "startDate": "2018-05-20T04:58:58.480Z",
+        "endDate": "2018-05-20T04:58:58.500Z",
+        "sub": "a5037cf2-5fe0-45bb-a86e-8f933ac21a16",
+        "username": "kazu"
+    },
+    {
+        "id": "5b01009ba7cc5500aa36ceb2",
+        "ticketToken": "0ccd3054-af6f-4e09-b1d5-c497453e640a",
+        "actionStatus": "CompletedActionStatus",
+        "startDate": "2018-05-20T04:59:07.020Z",
+        "endDate": "2018-05-20T04:59:07.044Z",
+        "sub": "d7f02ea8-0ccc-4402-bd4c-2d10f84ac0a5",
+        "username": "mayak"
+    },
+    {
+        "id": "5b0100b19b902500bafae17e",
+        "ticketToken": "6fa31a7c-69e3-4321-8e6b-0b22fa7972b8",
+        "actionStatus": "CompletedActionStatus",
+        "startDate": "2018-05-20T04:59:29.923Z",
+        "endDate": "2018-05-20T04:59:29.939Z",
+        "sub": "7b304108-b415-4d33-a443-a22b05b68d1e",
+        "username": "sakkun"
+    },
+    {
+        "id": "5b0100eb1faa1200bd3a08e1",
+        "ticketToken": "d549cdfe-81c6-4df7-a13d-9daad52813e5",
+        "actionStatus": "CompletedActionStatus",
+        "startDate": "2018-05-20T05:00:27.951Z",
+        "endDate": "2018-05-20T05:00:27.963Z",
+        "sub": "79011c72-8fd9-426f-9ab3-df866b65601d",
+        "username": "tateiwa"
+    },
+    {
+        "id": "5b0101261faa1200bd3a08e4",
+        "ticketToken": "73c3eb8e-88db-4207-bfc9-d4874d662613",
+        "actionStatus": "CompletedActionStatus",
+        "startDate": "2018-05-20T05:01:26.597Z",
+        "endDate": "2018-05-20T05:01:26.615Z",
+        "sub": "2918f93c-a792-43e3-b5b9-e42f7e2d5070",
+        "username": "sshinobu22"
+    },
+    {
+        "id": "5b0107169b902500bafae1c7",
+        "ticketToken": "4e08ec6f-8523-476d-8c01-539792b2a7a4",
+        "actionStatus": "CompletedActionStatus",
+        "startDate": "2018-05-20T05:26:46.308Z",
+        "endDate": "2018-05-20T05:26:46.336Z",
+        "sub": "1a0f0234-1059-48be-ba32-046af7c0303e",
+        "username": "hoshida"
+    },
+    {
+        "id": "5b01071ea7cc5500aa36cef0",
+        "ticketToken": "e07a3415-2341-43ae-a3ae-481f43a51c39",
+        "actionStatus": "CompletedActionStatus",
+        "startDate": "2018-05-20T05:26:54.219Z",
+        "endDate": "2018-05-20T05:26:54.240Z",
+        "sub": "ab5b4682-fb26-4d7f-b6f5-9551f70b3c90",
+        "username": "suabe"
+    },
+    {
+        "id": "5b010b49a7cc5500aa36cf18",
+        "ticketToken": "c4fb15c5-e387-4674-ab31-27dd974bb71c",
+        "actionStatus": "CompletedActionStatus",
+        "startDate": "2018-05-20T05:44:41.769Z",
+        "endDate": "2018-05-20T05:44:41.789Z",
+        "sub": "b5803257-934b-4510-8381-40c1c381a25c",
+        "username": "kfujimur"
+    },
+    {
+        "id": "5b010b5ba7cc5500aa36cf19",
+        "ticketToken": "c4fb15c5-e387-4674-ab31-27dd974bb71c",
+        "actionStatus": "CompletedActionStatus",
+        "startDate": "2018-05-20T05:44:59.125Z",
+        "endDate": "2018-05-20T05:44:59.140Z",
+        "sub": "b5803257-934b-4510-8381-40c1c381a25c",
+        "username": "kfujimur"
+    },
+    {
+        "id": "5b010b67a7cc5500aa36cf1a",
+        "ticketToken": "c4fb15c5-e387-4674-ab31-27dd974bb71c",
+        "actionStatus": "CompletedActionStatus",
+        "startDate": "2018-05-20T05:45:11.364Z",
+        "endDate": "2018-05-20T05:45:11.386Z",
+        "sub": "b5803257-934b-4510-8381-40c1c381a25c",
+        "username": "kfujimur"
+    },
+    {
+        "id": "5b010b711faa1200bd3a0960",
+        "ticketToken": "c4fb15c5-e387-4674-ab31-27dd974bb71c",
+        "actionStatus": "CompletedActionStatus",
+        "startDate": "2018-05-20T05:45:21.369Z",
+        "endDate": "2018-05-20T05:45:21.389Z",
+        "sub": "b5803257-934b-4510-8381-40c1c381a25c",
+        "username": "kfujimur"
+    },
+    {
+        "id": "5b010b771faa1200bd3a0961",
+        "ticketToken": "c4fb15c5-e387-4674-ab31-27dd974bb71c",
+        "actionStatus": "CompletedActionStatus",
+        "startDate": "2018-05-20T05:45:27.819Z",
+        "endDate": "2018-05-20T05:45:27.840Z",
+        "sub": "b5803257-934b-4510-8381-40c1c381a25c",
+        "username": "kfujimur"
+    },
+    {
+        "id": "5b010bcf9b902500bafae1fd",
+        "ticketToken": "b8798099-6550-4451-a741-b0f9f04bc42d",
+        "actionStatus": "CompletedActionStatus",
+        "startDate": "2018-05-20T05:46:55.691Z",
+        "endDate": "2018-05-20T05:46:55.706Z",
+        "sub": "d208d335-87ee-4345-b906-2ca44ce2c2f1",
+        "username": "tpi0613k"
+    },
+    {
+        "id": "5b010c74a7cc5500aa36cf26",
+        "ticketToken": "58cc5acf-d8e9-4934-b391-1452633c9d34",
+        "actionStatus": "CompletedActionStatus",
+        "startDate": "2018-05-20T05:49:40.572Z",
+        "endDate": "2018-05-20T05:49:40.592Z",
+        "sub": "ed01c978-0a6c-4d41-bf31-29024dd4c40b",
+        "username": "Fujimuri"
+    },
+    {
+        "id": "5b010c7da7cc5500aa36cf27",
+        "ticketToken": "bb91950c-dffe-4d4c-8e94-49e76c2b6f6a",
+        "actionStatus": "CompletedActionStatus",
+        "startDate": "2018-05-20T05:49:49.528Z",
+        "endDate": "2018-05-20T05:49:49.545Z",
+        "sub": "9351fe41-6e3a-48c1-80d5-aedd78da244b",
+        "username": "fujimuri2"
+    },
+    {
+        "id": "5b010d109b902500bafae202",
+        "ticketToken": "e321464d-e482-4def-8437-1f8aa5c4fd46",
+        "actionStatus": "CompletedActionStatus",
+        "startDate": "2018-05-20T05:52:16.167Z",
+        "endDate": "2018-05-20T05:52:16.191Z",
+        "sub": "e726837a-c653-4d33-ba6c-4e04b7c7f3ed",
+        "username": "chinatsu"
+    }
+]

@@ -1,0 +1,46 @@
+# Snyk (https://snyk.io) policy file, patches or ignores known vulnerabilities.
+version: v1.7.1
+# ignores vulnerabilities until expiry date; change duration by modifying expiry date
+ignore:
+  'npm:tough-cookie:20170905':
+    - request-promise-native > tough-cookie:
+        reason: waiting a fix.
+        expires: '2017-10-21T10:58:42.086Z'
+    - request > tough-cookie:
+        reason: waiting a fix.
+        expires: '2017-10-21T10:58:42.086Z'
+    - azure-storage > request > tough-cookie:
+        reason: waiting a fix.
+        expires: '2017-10-21T10:58:42.086Z'
+    - '@sendgrid/mail > @sendgrid/client > request > tough-cookie':
+        reason: waiting a fix.
+        expires: '2017-10-21T10:58:42.086Z'
+    - '@motionpicture/gmo-service > request-promise-native > tough-cookie':
+        reason: waiting a fix.
+        expires: '2017-10-21T10:58:42.086Z'
+    - '@motionpicture/gmo-service > request > tough-cookie':
+        reason: waiting a fix.
+        expires: '2017-10-21T10:58:42.086Z'
+    - '@motionpicture/coa-service > request-promise-native > tough-cookie':
+        reason: waiting a fix.
+        expires: '2017-10-21T10:58:42.086Z'
+    - '@motionpicture/coa-service > request > tough-cookie':
+        reason: waiting a fix.
+        expires: '2017-10-21T10:58:42.086Z'
+    - '@motionpicture/kwskfs-factory > @motionpicture/coa-service > request-promise-native > tough-cookie':
+        reason: waiting a fix.
+        expires: '2017-10-21T10:58:42.086Z'
+    - '@motionpicture/kwskfs-factory > @motionpicture/coa-service > request > tough-cookie':
+        reason: waiting a fix.
+        expires: '2017-10-21T10:58:42.086Z'
+    - '@motionpicture/kwskfs-factory > @motionpicture/gmo-service > request-promise-native > tough-cookie':
+        reason: waiting a fix.
+        expires: '2017-10-21T10:58:42.086Z'
+    - '@motionpicture/kwskfs-factory > @motionpicture/gmo-service > request > tough-cookie':
+        reason: waiting a fix.
+        expires: '2017-10-21T10:58:42.086Z'
+  'npm:debug:20170905':
+    - mongoose > mquery > debug:
+        reason: waiting update
+        expires: '2017-10-28T04:32:06.533Z'
+patch: {}
